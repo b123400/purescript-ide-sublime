@@ -2,6 +2,7 @@ import os
 import subprocess
 import threading
 import json
+import time
 
 # TODO: find out how to embed purs in plugin
 PURS_PATH = '/Users/b123400/.npm-node5/bin/purs'
@@ -21,7 +22,7 @@ def run_command(commands, stdin_text=None):
         stderr=subprocess.STDOUT,
     )
     if stdin_text is not None:
-        proc.stdin.write(stdin_text.encode('utf8'))
+        proc.stdin.write(stdin_text.encode('utf-8'))
         proc.stdin.close()
     result = b''
     exit_int = None
@@ -56,16 +57,31 @@ class Server(threading.Thread):
             '--port', str(self.port)])
         servers.pop(self.project_path, None)
 
-def start_server(project_path):
+def start_server(project_path, callback=None):
     if project_path in servers:
         print('purs ide server for', project_path, 'is alrady started')
         return
 
-    Server(project_path).start()
+    server = Server(project_path)
+    server.start()
+
+    def load_all_files():
+        retry = 0
+        while True:
+            time.sleep(0.5)
+            return_val = send_client_command(server.port, {"command": "load", "params": {}})
+            print(return_val)
+            if return_val is not None and return_val[0] == 0:
+                if callback is not None:
+                    callback(json.loads(return_val[1].decode('utf-8'))['result'])
+                break
+            retry += 1
+            if retry >= 10:
+                break
+    threading.Thread(target=load_all_files).start()
     print('Started purs ide server for path: ', project_path)
 
 def stop_server(project_path):
-    # TODO stop server
     if project_path not in servers:
         print('Server for path ', project_path, ' is not running')
         return

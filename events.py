@@ -37,7 +37,11 @@ class EventListener(sublime_plugin.EventListener):
         if project_dir is None:
             return
 
-        start_server(project_dir)
+        def callback(message):
+            view.window().status_message(message)
+
+        start_server(project_dir, callback=callback)
+        view.window().status_message('Starting purs ide server')
 
     def on_pre_close(self, view):
         if view.file_name() is None:
