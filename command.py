@@ -95,3 +95,40 @@ def send_client_command(port, json_obj):
 
 def send_quit_command(port):
     return send_client_command(port, {"command":"quit"})
+
+def get_code_complete(project_path, prefix):
+    if project_path not in servers:
+        print('Server for path ', project_path, ' is not running')
+        return
+    try:
+        num, result = send_client_command(
+            servers[project_path].port,
+            {
+                "command":"complete",
+                "params":{
+                    "matcher": {
+                        "matcher":"flex",
+                        "params":{"search":prefix}
+                    },
+                    "options": {
+                        "maxResults": 10
+                    }
+                }
+            })
+        if num != 0:
+            return
+        return json.loads(result.decode('utf-8'))['result']
+    except Exception as e:
+        print(e)
+
+class CodeCompleteThread(threading.Thread):
+    def __init__(self, project_path, prefix):
+        super().__init__()
+        self.project_path = project_path
+        self.prefix = prefix
+        self.return_val = None
+
+    def run(self):
+        self.return_val = get_code_complete(
+            self.project_path,
+            self.prefix)
