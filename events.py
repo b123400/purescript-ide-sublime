@@ -3,7 +3,7 @@ import sublime_plugin
 import tempfile
 import os
 
-from .command import start_server, stop_server, CodeCompleteThread
+from .command import start_server, stop_server, CodeCompleteThread, add_import
 
 def is_project_dir(path):
     return os.path.isfile(os.path.join(path, 'package.json'))
@@ -94,3 +94,43 @@ class CompletionEventListener(sublime_plugin.EventListener):
             self.last_completion_results[str_to_display] = r
             completions.append([str_to_display, r['identifier']])
         return completions
+
+    def on_modified_async(self, view):
+        syntax = view.settings().get('syntax')
+        if 'purescript' not in syntax:
+            return
+
+        command, detail, _ = view.command_history(0, True)
+        print(command)
+        if command != 'insert_completion':
+            return
+        if self.last_completion_results is None:
+            return
+        completion = self.last_completion_results.get(detail['completion'], None)
+        if completion is None:
+            return
+
+        project_path = find_project_dir(view.file_name())
+        file_text = view.substr(sublime.Region(0, view.size()))
+
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        temp_file.write(file_text.encode('utf-8'))
+        temp_file.close()
+        result = add_import(
+            project_path,
+            temp_file.name,
+            completion['module'],
+            completion['identifier'])
+        os.unlink(temp_file.name)
+
+        view.run_command('replace', {'text': '\n'.join(result)})
+
+        # Prevent replace again when pressed undo
+        self.last_completion_results = None
+
+class ReplaceCommand(sublime_plugin.TextCommand):
+    def run(self, edit, text=None):
+        self.view.replace(
+            edit,
+            sublime.Region(0, self.view.size()),
+            text)

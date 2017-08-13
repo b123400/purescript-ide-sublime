@@ -121,6 +121,29 @@ def get_code_complete(project_path, prefix):
     except Exception as e:
         print(e)
 
+
+def add_import(project_path, file_path, module, identifier):
+    num, result = send_client_command(
+        servers[project_path].port,
+        {
+            "command": "import",
+            "params": {
+                "file": file_path,
+                "filters": [{
+                    "filter": "modules",
+                    "params": {
+                        "modules": [module]
+                    }
+                }],
+                "importCommand": {
+                    "importCommand": "addImport",
+                    "identifier": identifier
+                }
+            }
+        }
+    )
+    return json.loads(result.decode('utf-8'))['result']
+
 class CodeCompleteThread(threading.Thread):
     def __init__(self, project_path, prefix):
         super().__init__()
