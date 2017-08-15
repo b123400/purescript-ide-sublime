@@ -122,6 +122,19 @@ def get_code_complete(project_path, prefix):
         print(e)
 
 
+class CodeCompleteThread(threading.Thread):
+    def __init__(self, project_path, prefix):
+        super().__init__()
+        self.project_path = project_path
+        self.prefix = prefix
+        self.return_val = None
+
+    def run(self):
+        self.return_val = get_code_complete(
+            self.project_path,
+            self.prefix)
+
+
 def add_import(project_path, file_path, module, identifier):
     num, result = send_client_command(
         servers[project_path].port,
@@ -144,14 +157,16 @@ def add_import(project_path, file_path, module, identifier):
     )
     return json.loads(result.decode('utf-8'))['result']
 
-class CodeCompleteThread(threading.Thread):
-    def __init__(self, project_path, prefix):
-        super().__init__()
-        self.project_path = project_path
-        self.prefix = prefix
-        self.return_val = None
 
-    def run(self):
-        self.return_val = get_code_complete(
-            self.project_path,
-            self.prefix)
+def get_module_imports(project_path, file_path):
+    num, result = send_client_command(
+        servers[project_path].port,
+        {
+            "command": "list",
+            "params": {
+                "file": file_path,
+                "type": "import"
+            }
+        }
+    )
+    return json.loads(result.decode('utf-8'))['result']
