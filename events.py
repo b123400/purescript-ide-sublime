@@ -1,36 +1,52 @@
 import sublime
 import sublime_plugin
+import time
 import tempfile
 import os
+from functools import wraps
 
-from .command import start_server, stop_server, CodeCompleteThread, add_import
+from .command import start_server, stop_server, CodeCompleteThread, add_import, get_module_imports, get_type
 
 def is_project_dir(path):
     return os.path.isfile(os.path.join(path, 'package.json'))
 
+project_path_cache = {}
 def find_project_dir(file_path):
+    if file_path is None:
+        return None
+    if file_path in project_path_cache:
+        return project_path_cache[file_path]
+
     this_path = file_path
     while True:
         parent = os.path.dirname(this_path)
         if is_project_dir(parent):
+            project_path_cache[file_path] = parent
             return parent
         if parent == this_path:
             return None
         else:
             this_path = parent
 
+def ignore_non_purescript(f):
+    @wraps(f)
+    def wrapped(self, view, *args, **kwds):
+        syntax = view.settings().get('syntax')
+        if 'purescript' not in syntax:
+            return
+        return f(self, view, *args, **kwds)
+    return wrapped
+
 class ExampleCommand(sublime_plugin.TextCommand):
   def run(self, edit):
     self.view.insert(edit, 0, 'Hello, World!')
 
 class StartServerEventListener(sublime_plugin.EventListener):
+
+    @ignore_non_purescript
     def on_load(self, view):
         file_name = view.file_name()
         if file_name is None:
-            return
-
-        syntax = view.settings().get('syntax')
-        if 'purescript' not in syntax:
             return
 
         project_dir = find_project_dir(file_name)
@@ -68,14 +84,8 @@ class CompletionEventListener(sublime_plugin.EventListener):
         super().__init__(*args, **kwargs)
         self.last_completion_results = None
 
+    @ignore_non_purescript
     def on_query_completions(self, view, prefix, locations):
-        syntax = view.settings().get('syntax')
-        if 'purescript' not in syntax:
-            return
-
-        # print('query', prefix, locations)
-        # print('scope', view.scope_name(locations[0]))
-
         if view.file_name() is None:
             return
 
@@ -95,10 +105,8 @@ class CompletionEventListener(sublime_plugin.EventListener):
             completions.append([str_to_display, r['identifier']])
         return completions
 
+    @ignore_non_purescript
     def on_modified_async(self, view):
-        syntax = view.settings().get('syntax')
-        if 'purescript' not in syntax:
-            return
 
         command, detail, _ = view.command_history(0, True)
         print(command)
@@ -113,6 +121,10 @@ class CompletionEventListener(sublime_plugin.EventListener):
         project_path = find_project_dir(view.file_name())
         file_text = view.substr(sublime.Region(0, view.size()))
 
+        # 1. Save the content of file to somewhere else
+        # 2. Use psc-ide to get the new content after auto import
+        # 3. Replace the file with the new content
+        # 4. Delete temp file
         temp_file = tempfile.NamedTemporaryFile(delete=False)
         temp_file.write(file_text.encode('utf-8'))
         temp_file.close()
@@ -127,6 +139,46 @@ class CompletionEventListener(sublime_plugin.EventListener):
 
         # Prevent replace again when pressed undo
         self.last_completion_results = None
+
+
+class TypeHintEventListener(sublime_plugin.EventListener):
+    @ignore_non_purescript
+    def on_hover(self, view, point, hover_zone):
+        if view.file_name() is None:
+            return
+        project_path = find_project_dir(view.file_name())
+        module_info = get_module_imports(project_path, view.file_name())
+        word = view.substr(view.word(point))
+        type_info = get_type(
+            project_path,
+            module_info['moduleName'],
+            word
+        )
+        if len(type_info) == 0:
+            return
+
+        first_result = type_info[0]
+
+        def on_navigate(string):
+            view.window().open_file(string, sublime.ENCODED_POSITION)
+
+        #filepath:row:col
+        link_url = first_result['definedAt']['name'] + ':' + \
+            str(first_result['definedAt']['start'][0]) + ':' + \
+            str(first_result['definedAt']['start'][1])
+
+        view.show_popup('''
+            <p>From: <a href="%s">%s</a> </p>
+            <p>Type: %s </p>
+        ''' % ( link_url,
+                ",".join(first_result['exportedFrom']),
+                first_result['type']),
+        sublime.HIDE_ON_MOUSE_MOVE_AWAY,
+        point,
+        500,    # max width
+        500,    # max height
+        on_navigate)
+
 
 class ReplaceCommand(sublime_plugin.TextCommand):
     def run(self, edit, text=None):
