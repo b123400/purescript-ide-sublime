@@ -162,7 +162,33 @@ class TypeHintEventListener(PurescriptViewEventListener):
 
     def on_hover(self, point, hover_zone):
         view = self.view
+        file_name = view.file_name()
+        if file_name is None:
             return
+
+        error = error_manager.get_error_at_point(file_name, point)
+        if error:
+            self.show_error(view, error, point)
+            return
+        self.show_type_hint(view, point)
+
+    def show_error(self, view, error, point):
+        error_message_lines = error['message'].split('\n')
+        error_message = "".join(['<p>%s</p>' % s.replace(' ', '&nbsp;') for s in error_message_lines])
+
+        handle_nav = None
+        def default_handle_nav(href):
+            pass
+        handle_nav = default_handle_nav
+
+        view.show_popup(error_message,
+            sublime.HIDE_ON_MOUSE_MOVE_AWAY,
+            point,
+            600,
+            600,
+            handle_nav)
+
+    def show_type_hint(self, view, point):
         project_path = find_project_dir(view.file_name())
         module_info = get_module_imports(project_path, view.file_name())
         word = view.substr(view.word(point))
