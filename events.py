@@ -37,9 +37,6 @@ def ignore_non_purescript(f):
         return f(self, view, *args, **kwds)
     return wrapped
 
-class ExampleCommand(sublime_plugin.TextCommand):
-  def run(self, edit):
-    self.view.insert(edit, 0, 'Hello, World!')
 
 class StartServerEventListener(sublime_plugin.EventListener):
 
