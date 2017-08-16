@@ -185,3 +185,17 @@ def get_type(project_path, module_name, identifier):
         }
     )
     return json.loads(result.decode('utf-8'))['result']
+
+
+def rebuild(project_path, file_path):
+    num, result = send_client_command(
+        servers[project_path].port,
+        {
+          "command": "rebuild",
+          "params": {
+            "file": file_path
+          }
+        }
+    )
+    print(result)
+    return json.loads(result.decode('utf-8'))['result']
