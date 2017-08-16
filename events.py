@@ -28,6 +28,7 @@ def find_project_dir(file_path):
         else:
             this_path = parent
 
+
 def ignore_non_purescript(f):
     @wraps(f)
     def wrapped(self, view, *args, **kwds):
@@ -36,6 +37,16 @@ def ignore_non_purescript(f):
             return
         return f(self, view, *args, **kwds)
     return wrapped
+
+
+class PurescriptViewEventListener(sublime_plugin.ViewEventListener):
+
+    @classmethod
+    def is_applicable(cls, settings):
+        syntax = settings.get('syntax')
+        if 'purescript' not in syntax:
+            return False
+        return True
 
 
 class StartServerEventListener(sublime_plugin.EventListener):
@@ -56,6 +67,7 @@ class StartServerEventListener(sublime_plugin.EventListener):
         start_server(project_dir, callback=callback)
         view.window().status_message('Starting purs ide server')
 
+    @ignore_non_purescript
     def on_pre_close(self, view):
         if view.file_name() is None:
             return
@@ -76,13 +88,13 @@ class StartServerEventListener(sublime_plugin.EventListener):
         sublime.set_timeout(perform, 500)
 
 
-class CompletionEventListener(sublime_plugin.EventListener):
+class CompletionEventListener(PurescriptViewEventListener):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last_completion_results = None
 
-    @ignore_non_purescript
-    def on_query_completions(self, view, prefix, locations):
+    def on_query_completions(self, prefix, locations):
+        view = self.view
         if view.file_name() is None:
             return
 
@@ -90,6 +102,7 @@ class CompletionEventListener(sublime_plugin.EventListener):
 
         this_thread = CodeCompleteThread(project_path, prefix)
         this_thread.start()
+        # TODO, read timeout from pref
         this_thread.join(timeout=None)
 
         self.last_completion_results = {}
@@ -102,9 +115,8 @@ class CompletionEventListener(sublime_plugin.EventListener):
             completions.append([str_to_display, r['identifier']])
         return completions
 
-    @ignore_non_purescript
-    def on_modified_async(self, view):
-
+    def on_modified_async(self):
+        view = self.view
         command, detail, _ = view.command_history(0, True)
         print(command)
         if command != 'insert_completion':
@@ -138,10 +150,10 @@ class CompletionEventListener(sublime_plugin.EventListener):
         self.last_completion_results = None
 
 
-class TypeHintEventListener(sublime_plugin.EventListener):
-    @ignore_non_purescript
-    def on_hover(self, view, point, hover_zone):
-        if view.file_name() is None:
+class TypeHintEventListener(PurescriptViewEventListener):
+
+    def on_hover(self, point, hover_zone):
+        view = self.view
             return
         project_path = find_project_dir(view.file_name())
         module_info = get_module_imports(project_path, view.file_name())
@@ -178,7 +190,7 @@ class TypeHintEventListener(sublime_plugin.EventListener):
 
 
 class ReplaceCommand(sublime_plugin.TextCommand):
-    def run(self, edit, text=None):
+    def run(self, edit, text):
         self.view.replace(
             edit,
             sublime.Region(0, self.view.size()),
