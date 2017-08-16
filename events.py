@@ -3,6 +3,7 @@ import sublime_plugin
 import time
 import tempfile
 import os
+import webbrowser
 from functools import wraps
 
 from .command import ( start_server
@@ -180,6 +181,17 @@ class TypeHintEventListener(PurescriptViewEventListener):
         def default_handle_nav(href):
             pass
         handle_nav = default_handle_nav
+
+        error_link = error.get('errorLink', None)
+        if error_link is not None:
+            before_error_link = handle_nav
+            error_message = error_message + '<p><a href="error_link">More Info</a></p>'
+            def open_error_link(href):
+                if href != 'error_link':
+                    before_error_link()
+                    return
+                webbrowser.open_new_tab(error_link)
+            handle_nav = open_error_link
 
         suggestion = error.get('suggestion', None)
         if suggestion is not None:
