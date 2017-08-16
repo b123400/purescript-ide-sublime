@@ -181,6 +181,39 @@ class TypeHintEventListener(PurescriptViewEventListener):
             pass
         handle_nav = default_handle_nav
 
+        suggestion = error.get('suggestion', None)
+        if suggestion is not None:
+            before_auto_save = handle_nav
+            error_message = '<p><a href="replace">Fix it!</a></p>' + error_message
+            def auto_fix(href):
+                if href != 'replace':
+                    before_auto_save(href)
+                    return
+
+                start_point = view.text_point(
+                    suggestion['replaceRange']['startLine']-1,
+                    suggestion['replaceRange']['startColumn']-1
+                )
+                end_point = view.text_point(
+                    suggestion['replaceRange']['endLine']-1,
+                    suggestion['replaceRange']['endColumn']-1
+                )
+
+                # if the last char is \n, create one less \n
+                replacement = suggestion['replacement']
+                if len(replacement) > 0 and replacement[-1] == '\n':
+                    replacement = replacement[:-1]
+
+                view.run_command(
+                    'replace_region',
+                    {
+                        'text': replacement,
+                        'start': start_point,
+                        'end': end_point
+                    })
+
+            handle_nav = auto_fix
+
         view.show_popup(error_message,
             sublime.HIDE_ON_MOUSE_MOVE_AWAY,
             point,
@@ -275,4 +308,12 @@ class ReplaceCommand(sublime_plugin.TextCommand):
         self.view.replace(
             edit,
             sublime.Region(0, self.view.size()),
+            text)
+
+
+class ReplaceRegionCommand(sublime_plugin.TextCommand):
+    def run(self, edit, text, start, end):
+        self.view.replace(
+            edit,
+            sublime.Region(start, end),
             text)
