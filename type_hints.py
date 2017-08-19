@@ -91,7 +91,8 @@ class TypeHintEventListener(PurescriptViewEventListener):
         type_info = get_type(
             project_path,
             module_info['moduleName'],
-            word
+            word,
+            [m['module'] for m in module_info['imports']]
         )
         if len(type_info) == 0:
             return

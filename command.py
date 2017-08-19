@@ -180,14 +180,23 @@ def get_module_imports(project_path, file_path):
     return json.loads(result.decode('utf-8'))['result']
 
 
-def get_type(project_path, module_name, identifier):
+def get_type(project_path, module_name, identifier, imported_modules=[]):
+    filters = []
+    if len(imported_modules) > 0:
+        filters.append({
+           "filter": "modules",
+           "params": {
+             "modules": imported_modules
+           }
+        })
+
     num, result = send_client_command(
         servers[project_path].port,
         {
             "command": "type",
             "params": {
                 "search": identifier,
-                "filters": [],
+                "filters": filters,
                 "currentModule": module_name
             }
         }
