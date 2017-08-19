@@ -7,12 +7,18 @@ import time
 # TODO: find out how to embed purs in plugin
 PURS_PATH = '/Users/b123400/.npm-node5/bin/purs'
 PURS_IDE_PORT = 45454
+DEBUG_LOG = True
+
+
+def log(*args):
+    if DEBUG_LOG:
+        print(*args)
 
 def run_command(commands, stdin_text=None):
     new_env = dict(
         os.environ,
         PATH=os.environ['PATH']+':/usr/local/bin')
-    print('running: ', commands)
+    log('running: ', commands)
     proc = subprocess.Popen(
         commands,
         env=new_env,
@@ -31,11 +37,13 @@ def run_command(commands, stdin_text=None):
         if exit_int is not None:
             break
         line = proc.stdout.readline() # This blocks until it receives a newline.
-        print(line)
+        log(line)
         result += line
     # When the subprocess terminates there might be unconsumed output
     # that still needs to be processed.
     result += proc.stdout.read()
+    if exit_int != 0:
+        log('purescript-ide-sublime error', exit_int, result)
     return (exit_int, result)
 
 # Path: Thread
@@ -59,7 +67,7 @@ class Server(threading.Thread):
 
 def start_server(project_path, callback=None):
     if project_path in servers:
-        print('purs ide server for', project_path, 'is alrady started')
+        log('purs ide server for', project_path, 'is alrady started')
         return
 
     server = Server(project_path)
@@ -70,7 +78,7 @@ def start_server(project_path, callback=None):
         while True:
             time.sleep(0.5)
             return_val = send_client_command(server.port, {"command": "load", "params": {}})
-            print(return_val)
+            log(return_val)
             if return_val is not None and return_val[0] == 0:
                 if callback is not None:
                     callback(json.loads(return_val[1].decode('utf-8'))['result'])
@@ -79,11 +87,11 @@ def start_server(project_path, callback=None):
             if retry >= 10:
                 break
     threading.Thread(target=load_all_files).start()
-    print('Started purs ide server for path: ', project_path)
+    log('Started purs ide server for path: ', project_path)
 
 def stop_server(project_path):
     if project_path not in servers:
-        print('Server for path ', project_path, ' is not running')
+        log('Server for path ', project_path, ' is not running')
         return
     return send_quit_command(servers[project_path].port)
 
@@ -98,7 +106,7 @@ def send_quit_command(port):
 
 def get_code_complete(project_path, prefix):
     if project_path not in servers:
-        print('Server for path ', project_path, ' is not running')
+        log('Server for path ', project_path, ' is not running')
         return
     try:
         num, result = send_client_command(
@@ -119,7 +127,7 @@ def get_code_complete(project_path, prefix):
             return
         return json.loads(result.decode('utf-8'))['result']
     except Exception as e:
-        print(e)
+        log(e)
 
 
 class CodeCompleteThread(threading.Thread):
@@ -197,5 +205,4 @@ def rebuild(project_path, file_path):
           }
         }
     )
-    print(result)
     return json.loads(result.decode('utf-8'))['result']

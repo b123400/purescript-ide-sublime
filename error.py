@@ -1,5 +1,3 @@
-
-
 class ErrorManager(object):
     """Manage all detect errors"""
     def __init__(self,):
