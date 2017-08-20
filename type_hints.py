@@ -90,6 +90,8 @@ class TypeHintEventListener(PurescriptViewEventListener):
         word = view.substr(view.word(point))
         if word == '':
             return
+        if word[0] == '(' and word[-1] == ')':
+            word = word[1:-1]
 
         type_info = get_type(
             project_path,
