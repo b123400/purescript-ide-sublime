@@ -40,15 +40,14 @@ class StartServerEventListener(sublime_plugin.EventListener):
         window = view.window()
         def callback(message):
             window.status_message(message)
-
-        start_server(project_dir, callback=callback)
-        view.window().status_message('Starting purs ide server')
+        start_server(project_dir, on_message=callback)
 
     @ignore_non_purescript
     def on_pre_close(self, view):
         if view.file_name() is None:
             return
 
+        window = view.window()
         this_project_path = find_project_dir(view)
 
         def perform():
@@ -58,8 +57,8 @@ class StartServerEventListener(sublime_plugin.EventListener):
             all_project_paths = list(set(all_project_paths))
 
             if this_project_path not in all_project_paths:
-                print('Closing purs server for path:', this_project_path)
                 stop_server(this_project_path)
+                window.status_message('Closed server for path:' + this_project_path)
 
         # delay server closing for 0.5s, because we may be "switching" between files
         sublime.set_timeout(perform, 500)

@@ -10,15 +10,41 @@ def log(*args):
     if get_settings('enable_debug_log'):
         print(*args)
 
-def run_command(commands, stdin_text=None):
+
+path_cache = None
+def guess_path():
+    global path_cache
+    if path_cache is None:
+        try:
+            # TODO, make sure bash works coz i am using zsh
+            env_path = run_command([
+                os.environ['SHELL'],
+                '--login',
+                '--interactive',
+                '-c',
+                'echo " __SUBLIME_PURESCRIPT__$PATH __SUBLIME_PURESCRIPT__"'
+                ],
+                path=os.environ['PATH'])[1].split(' __SUBLIME_PURESCRIPT__')[1]
+            path_cache = env_path
+        except Exception as e:
+            path_cache = os.environ['PATH']+':/usr/local/bin'
+    return path_cache
+
+
+def run_command(commands, stdin_text=None, path=None):
+    if path is None:
+        env_path = guess_path()
+    else:
+        env_path = os.environ['PATH']
     new_env = dict(
         os.environ,
-        PATH=os.environ['PATH']+':/usr/local/bin')
+        TERM='ansi',
+        CLICOLOR='',
+        PATH=env_path)
     log('running: ', commands)
     proc = subprocess.Popen(
         commands,
         env=new_env,
-        #shell=True,
         stdin=(None if stdin_text is None else subprocess.PIPE),
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -40,7 +66,27 @@ def run_command(commands, stdin_text=None):
     result += proc.stdout.read()
     if exit_int != 0:
         log('purescript-ide-sublime error', exit_int, result)
-    return (exit_int, result)
+        pass
+    return (exit_int, result.decode('utf-8'))
+
+
+purs_path_cache = None
+def get_purs_path():
+    global purs_path_cache
+
+    custom_path = get_settings('purs_path', None)
+    if custom_path is not None:
+        return custom_path
+
+    if not purs_path_cache:
+        try:
+            num, result = run_command(['which', 'purs'])
+            if num != 0:
+                raise Exception()
+            purs_path_cache = result.replace('\n', '')
+        except Exception:
+            return None
+    return purs_path_cache
 
 
 # Path: Thread
@@ -55,7 +101,7 @@ class Server(threading.Thread):
 
     def run(self):
         servers[self.project_path] = self
-        purs_path = get_settings('purs_path', None)
+        purs_path = get_purs_path()
         if not purs_path:
             return
         exit_int, stdout = run_command([
@@ -66,9 +112,16 @@ class Server(threading.Thread):
             '--port', str(self.port)])
         servers.pop(self.project_path, None)
 
-def start_server(project_path, callback=None):
+
+def start_server(project_path, on_message=lambda x:x):
     if project_path in servers:
         log('purs ide server for', project_path, 'is alrady started')
+        return
+
+    if get_purs_path() is None:
+        on_message('Cannot find purs. See logs.')
+        print('Cannot find purs in PATH: '+guess_path())
+        print('Please set custom path in purescript-ide.sublime-settings with the key "purs_path"')
         return
 
     server = Server(project_path)
@@ -81,14 +134,13 @@ def start_server(project_path, callback=None):
             return_val = send_client_command(server.port, {"command": "load", "params": {}})
             log(return_val)
             if return_val is not None and return_val[0] == 0:
-                if callback is not None:
-                    callback(json.loads(return_val[1].decode('utf-8'))['result'])
+                on_message(json.loads(return_val[1])['result'])
                 break
             retry += 1
             if retry >= 10:
                 break
     threading.Thread(target=load_all_files).start()
-    log('Started purs ide server for path: ', project_path)
+    on_message('Starting purs ide server at path: ' + project_path)
 
 def stop_server(project_path):
     if project_path not in servers:
@@ -101,7 +153,7 @@ def stop_all_servers():
         stop_server(project_path)
 
 def send_client_command(port, json_obj):
-    purs_path = get_settings('purs_path', None)
+    purs_path = get_purs_path()
     if not purs_path:
         return None
     return run_command([
@@ -116,26 +168,23 @@ def get_code_complete(project_path, prefix):
     if project_path not in servers:
         log('Server for path ', project_path, ' is not running')
         return
-    try:
-        num, result = send_client_command(
-            servers[project_path].port,
-            {
-                "command":"complete",
-                "params":{
-                    "matcher": {
-                        "matcher":"flex",
-                        "params":{"search":prefix}
-                    },
-                    "options": {
-                        "maxResults": 10
-                    }
+    num, result = send_client_command(
+        servers[project_path].port,
+        {
+            "command":"complete",
+            "params":{
+                "matcher": {
+                    "matcher":"flex",
+                    "params":{"search":prefix}
+                },
+                "options": {
+                    "maxResults": 10
                 }
-            })
-        if num != 0:
-            return
-        return json.loads(result.decode('utf-8'))['result']
-    except Exception as e:
-        log(e)
+            }
+        })
+    if num != 0:
+        return
+    return json.loads(result)['result']
 
 
 class CodeCompleteThread(threading.Thread):
@@ -171,7 +220,7 @@ def add_import(project_path, file_path, module, identifier):
             }
         }
     )
-    return json.loads(result.decode('utf-8'))['result']
+    return json.loads(result)['result']
 
 
 def get_module_imports(project_path, file_path):
@@ -185,7 +234,7 @@ def get_module_imports(project_path, file_path):
             }
         }
     )
-    return json.loads(result.decode('utf-8'))['result']
+    return json.loads(result)['result']
 
 
 def get_type(project_path, module_name, identifier, imported_modules=[]):
@@ -209,7 +258,7 @@ def get_type(project_path, module_name, identifier, imported_modules=[]):
             }
         }
     )
-    return json.loads(result.decode('utf-8'))['result']
+    return json.loads(result)['result']
 
 
 def rebuild(project_path, file_path):
@@ -222,7 +271,7 @@ def rebuild(project_path, file_path):
           }
         }
     )
-    return json.loads(result.decode('utf-8'))['result']
+    return json.loads(result)['result']
 
 
 def plugin_unloaded():

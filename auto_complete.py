@@ -29,7 +29,6 @@ class CompletionEventListener(PurescriptViewEventListener):
         this_thread.start()
 
         timeout = get_settings('auto_complete_timeout', None)
-        # TODO, read timeout from pref
         this_thread.join(timeout=timeout)
 
         if this_thread.return_val is None:
