@@ -95,6 +95,10 @@ def stop_server(project_path):
         return
     return send_quit_command(servers[project_path].port)
 
+def stop_all_servers():
+    for project_path in servers:
+        stop_server(project_path)
+
 def send_client_command(port, json_obj):
     return run_command([
         PURS_PATH, 'ide', 'client',
@@ -215,3 +219,7 @@ def rebuild(project_path, file_path):
         }
     )
     return json.loads(result.decode('utf-8'))['result']
+
+
+def plugin_unloaded():
+    stop_all_servers()
