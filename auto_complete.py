@@ -6,10 +6,11 @@ import os
 import webbrowser
 from functools import wraps
 
-from .command import CodeCompleteThread
+from .command import CodeCompleteThread, add_import
 from .utility import ( find_project_dir
                      , PurescriptViewEventListener
                      )
+
 
 class CompletionEventListener(PurescriptViewEventListener):
     def __init__(self, *args, **kwargs):
@@ -42,7 +43,6 @@ class CompletionEventListener(PurescriptViewEventListener):
         # Import the module after the user selected the auto complete
         view = self.view
         command, detail, _ = view.command_history(0, True)
-        print(command)
         if command != 'insert_completion':
             return
         if self.last_completion_results is None:
@@ -53,6 +53,8 @@ class CompletionEventListener(PurescriptViewEventListener):
 
         project_path = find_project_dir(view)
         file_text = view.substr(sublime.Region(0, view.size()))
+
+        # TODO, also import the types
 
         # 1. Save the content of file to somewhere else
         # 2. Use psc-ide to get the new content after auto import
