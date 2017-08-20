@@ -51,7 +51,7 @@ class Server(threading.Thread):
         super().__init__()
         self.project_path = project_path
         default_port = get_settings('port_starts_from', 4242)
-        self.port = max([s.port for s in servers.values()] + [PURS_IDE_PORT-1]) + 1
+        self.port = max([s.port for s in servers.values()] + [default_port-1]) + 1
 
     def run(self):
         servers[self.project_path] = self
