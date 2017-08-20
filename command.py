@@ -16,16 +16,25 @@ def guess_path():
     global path_cache
     if path_cache is None:
         try:
-            # TODO, make sure bash works coz i am using zsh
-            env_path = run_command([
-                os.environ['SHELL'],
-                '--login',
-                '--interactive',
-                '-c',
-                'echo " __SUBLIME_PURESCRIPT__$PATH __SUBLIME_PURESCRIPT__"'
-                ],
-                path=os.environ['PATH'])[1].split(' __SUBLIME_PURESCRIPT__')[1]
-            path_cache = env_path
+            shell = os.environ['SHELL']
+            if shell.endswith('zsh'):
+                path_cache = run_command([
+                    os.environ['SHELL'],
+                    '--login',
+                    '--interactive',
+                    '-c',
+                    'echo " __SUBLIME_PURESCRIPT__$PATH __SUBLIME_PURESCRIPT__"'
+                    ],
+                    path=os.environ['PATH'])[1].split(' __SUBLIME_PURESCRIPT__')[1]
+            else:
+                # normal bash
+                path_cache = run_command([
+                    os.environ['SHELL'],
+                    '--login',
+                    '-c',
+                    'echo " __SUBLIME_PURESCRIPT__$PATH __SUBLIME_PURESCRIPT__"'
+                    ],
+                    path=os.environ['PATH'])[1].split(' __SUBLIME_PURESCRIPT__')[1]
         except Exception as e:
             path_cache = os.environ['PATH']+':/usr/local/bin'
     return path_cache
