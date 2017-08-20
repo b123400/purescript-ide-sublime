@@ -1,0 +1,13 @@
+{
+  "enable_debug_log": true,
+
+  // Expecting an absolute path, or use null to use shell's PATH
+  "purs_path": null,
+
+  // timeout in second, null means no timeout
+  "auto_complete_timeout": null,
+
+  // Servers that are already running will not change port
+  // when you modify this setting. Restart if you need.
+  "port_starts_from": 4242
+}

@@ -1,6 +1,6 @@
 import sublime
 
-SETTINGS_FILE = 'purescript-ide-sublime.sublime-settings'
+SETTINGS_FILE = 'purescript-ide.sublime-settings'
 SETTING_KEYS = ['enable_debug_log', 'purs_path', 'port_starts_from', 'auto_complete_timeout']
 settings = {}
 
