@@ -88,6 +88,9 @@ class TypeHintEventListener(PurescriptViewEventListener):
         project_path = find_project_dir(view)
         module_info = get_module_imports(project_path, view.file_name())
         word = view.substr(view.word(point))
+        if word == '':
+            return
+
         type_info = get_type(
             project_path,
             module_info['moduleName'],
