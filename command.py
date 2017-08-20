@@ -3,15 +3,11 @@ import subprocess
 import threading
 import json
 import time
-
-# TODO: find out how to embed purs in plugin
-PURS_PATH = '/Users/b123400/.npm-node5/bin/purs'
-PURS_IDE_PORT = 45454
-DEBUG_LOG = True
+from .settings import get_settings
 
 
 def log(*args):
-    if DEBUG_LOG:
+    if get_settings('enable_debug_log'):
         print(*args)
 
 def run_command(commands, stdin_text=None):
@@ -46,6 +42,7 @@ def run_command(commands, stdin_text=None):
         log('purescript-ide-sublime error', exit_int, result)
     return (exit_int, result)
 
+
 # Path: Thread
 servers = {}
 
@@ -53,12 +50,16 @@ class Server(threading.Thread):
     def __init__(self, project_path):
         super().__init__()
         self.project_path = project_path
+        default_port = get_settings('port_starts_from', 4242)
         self.port = max([s.port for s in servers.values()] + [PURS_IDE_PORT-1]) + 1
 
     def run(self):
         servers[self.project_path] = self
+        purs_path = get_settings('purs_path', None)
+        if not purs_path:
+            return
         exit_int, stdout = run_command([
-            PURS_PATH, 'ide', 'server',
+            purs_path, 'ide', 'server',
             '--directory', self.project_path,
             './**/*.purs',
             '--log-level', 'all',
@@ -100,8 +101,11 @@ def stop_all_servers():
         stop_server(project_path)
 
 def send_client_command(port, json_obj):
+    purs_path = get_settings('purs_path', None)
+    if not purs_path:
+        return None
     return run_command([
-        PURS_PATH, 'ide', 'client',
+        purs_path, 'ide', 'client',
         '--port', str(port)],
         stdin_text=json.dumps(json_obj))
 
