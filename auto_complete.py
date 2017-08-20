@@ -6,10 +6,11 @@ import os
 import webbrowser
 from functools import wraps
 
-from .command import CodeCompleteThread, add_import
+from .command import CodeCompleteThread, add_import, log
 from .utility import ( find_project_dir
                      , PurescriptViewEventListener
                      )
+from .settings import get_settings
 
 
 class CompletionEventListener(PurescriptViewEventListener):
@@ -26,11 +27,18 @@ class CompletionEventListener(PurescriptViewEventListener):
 
         this_thread = CodeCompleteThread(project_path, prefix)
         this_thread.start()
+
+        timeout = get_settings('auto_complete_timeout', None)
         # TODO, read timeout from pref
-        this_thread.join(timeout=None)
+        this_thread.join(timeout=timeout)
+
+        if this_thread.return_val is None:
+            log('autocomplete probably timeout')
+            return
 
         self.last_completion_results = {}
         completions = []
+
         for r in this_thread.return_val:
             str_to_display = r['identifier']+'\t'+r['type']
             if str_to_display in self.last_completion_results:

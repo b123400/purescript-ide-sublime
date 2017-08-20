@@ -5,6 +5,8 @@
   // will trigger a purs download automatically
   "purs_path": "/Users/b123400/.npm-node5/bin/purs",
 
+  "auto_complete_timeout": null,
+
   // Servers that are already running will not change port
   // when you modify this setting. Restart if you need.
   "port_starts_from": 4242
