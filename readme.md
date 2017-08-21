@@ -12,6 +12,8 @@ This sublime text plugin integrates `psc-ide`.
 
 ## Settings
 
+Override the default settings by creating your own `User/purescript-ide.sublime.settings`
+
 ```
 {
   "enable_debug_log": true,
