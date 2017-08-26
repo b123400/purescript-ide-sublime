@@ -191,9 +191,10 @@ def get_code_complete(project_path, prefix):
                 }
             }
         })
-    if num != 0:
-        return
-    return json.loads(result)['result']
+    result = json.loads(result)
+    if result['resultType'] != 'success':
+        return None
+    return result['result']
 
 
 class CodeCompleteThread(threading.Thread):
@@ -229,7 +230,10 @@ def add_import(project_path, file_path, module, identifier):
             }
         }
     )
-    return json.loads(result)['result']
+    result = json.loads(result)
+    if result['resultType'] != 'success':
+        return None
+    return result['result']
 
 
 def get_module_imports(project_path, file_path):
@@ -243,7 +247,10 @@ def get_module_imports(project_path, file_path):
             }
         }
     )
-    return json.loads(result)['result']
+    result = json.loads(result)
+    if result['resultType'] != 'success':
+        return None
+    return result['result']
 
 
 def get_type(project_path, module_name, identifier, imported_modules=[]):
@@ -267,7 +274,10 @@ def get_type(project_path, module_name, identifier, imported_modules=[]):
             }
         }
     )
-    return json.loads(result)['result']
+    result = json.loads(result)
+    if result['resultType'] != 'success':
+        return None
+    return result['result']
 
 
 def rebuild(project_path, file_path):
@@ -280,7 +290,8 @@ def rebuild(project_path, file_path):
           }
         }
     )
-    return json.loads(result)['result']
+    result = json.loads(result)
+    return result['result']
 
 
 def plugin_unloaded():
