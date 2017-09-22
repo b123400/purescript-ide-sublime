@@ -48,7 +48,7 @@ class RebuildEventListener(sublime_plugin.EventListener):
 
             # This thing does not exist in doc, but it exists in the default theme.
             # It might break some days
-            "light_x_bright",
+            "warning",
 
             sublime.DRAW_NO_FILL |
             sublime.DRAW_NO_OUTLINE |

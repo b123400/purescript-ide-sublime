@@ -21,4 +21,7 @@ def update_settings():
         settings[key] = raw_setting.get(key)
 
 def get_settings(key, default=None):
-    return settings.get(key, default)
+    val = settings.get(key, None)
+    if val is not None:
+      return val
+    return default

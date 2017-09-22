@@ -35,6 +35,8 @@ def ignore_non_purescript(f):
     @wraps(f)
     def wrapped(self, view, *args, **kwds):
         syntax = view.settings().get('syntax')
+        if syntax is None:
+            return
         if 'purescript' not in syntax:
             return
         return f(self, view, *args, **kwds)
@@ -46,6 +48,8 @@ class PurescriptViewEventListener(sublime_plugin.ViewEventListener):
     @classmethod
     def is_applicable(cls, settings):
         syntax = settings.get('syntax')
+        if syntax is None:
+            return
         if 'purescript' not in syntax:
             return False
         return True
