@@ -1,0 +1,610 @@
+# [PackageDev] target_format: plist, ext: tmLanguage
+---
+name: PureScript
+scopeName: source.purescript
+fileTypes: [purs, purs.hs]
+uuid: a2569d0d-e592-4873-9488-e0b8d894ac3e
+
+patterns:
+- name: meta.section.module.purescript
+  begin: ^\s*\b(module)\b
+  end: \b(where)\b
+  captures:
+    "1":
+      name: keyword.other.purescript
+  patterns:
+  - include: '#module-name'
+
+- name: meta.declaration.import.purescript
+  begin: \b(import)\b
+  end: $
+  beginCaptures:
+    "1":
+      name: keyword.other.purescript
+  patterns:
+  - include: '#module-name'
+
+- name: meta.declaration.type.purescript
+  begin: ^\s*\b(type)\b
+  end: $
+  beginCaptures:
+    "1":
+      name: keyword.other.purescript
+  patterns:
+  - include: '#type-simple'
+
+- name: meta.declaration.typeclass.purescript
+  begin: ^\s*\b(class)\b
+  end: \b(where)\b|$
+  captures:
+    "1":
+      name: keyword.other.purescript
+  patterns:
+  - name: entity.other.inherited-class.purescript
+    match: ([A-Z][\w.']*)
+  - include: '#prelude-typeclass'
+  - include: '#generic-tyvar'
+
+- name: meta.declaration.instance.purescript
+  begin: ^\s*\b(instance)\b
+  end: \b(where)\b|$
+  captures:
+    "1":
+      name: keyword.other.purescript
+  patterns:
+  - include: '#type-signature'
+
+- name: meta.declaration.function.purescript
+  begin: "^\\s*([a-z_][\\w\\d\\']*|\\(.+\\))\\s*(::)"
+  end: $
+  beginCaptures:
+    "1":
+      name: entity.name.function.purescript
+    "2":
+      name: keyword.operator.has-type.purescript
+  patterns:
+  - include: '#type-signature'
+
+- name: meta.declaration.ffi.data.purescript
+  match: \s*(foreign)\s+(import)\s+(data)\s+(.+?)\s+(::)
+  captures:
+    "1":
+      name: keyword.other.purescript
+    "2":
+      name: keyword.other.purescript
+    "3":
+      name: keyword.other.purescript
+    "4":
+      name: entity.name.function.ffi.purescript
+
+- name: meta.declaration.ffi.function.purescript
+  begin: \s*(foreign)\s+(import)\s+(.+?)\s+
+  end: \s*(::)(.+?)
+  beginCaptures:
+    "1":
+      name: keyword.other.purescript
+    "2":
+      name: keyword.other.purescript
+    "3":
+      name: entity.name.function.ffi.purescript
+  endCaptures:
+    "1":
+      name: keyword.operator.has-type.purescript
+  patterns:
+    - include: '#ffi'
+
+- include: '#comments'
+- include: '#reserveds'
+- include: '#constants'
+- include: '#numbers'
+- include: '#strings'
+- include: '#prelude'
+- include: '#array'
+- include: '#eff'
+- include: '#either'
+- include: '#enum'
+- include: '#error'
+- include: '#global'
+- include: '#ioref'
+- include: '#math'
+- include: '#maybe'
+- include: '#monad'
+- include: '#monoid'
+- include: '#random'
+- include: '#regex'
+- include: '#st'
+- include: '#string'
+- include: '#trace'
+- include: '#tuple'
+- include: '#data'
+
+repository:
+  comments:
+    patterns:
+    - name: comment.line.purescript
+      match: \-\-.*
+    - name: comment.block.purescript
+      begin: \{\-
+      end: \-\}
+
+  constants:
+    name: constant.language.purescript
+    match: \b(true|false)\b
+
+  data:
+    name: constant.other.purescript
+    match: \b([A-Z]\w*)\b
+
+  decl-ctor:
+    match: \s*([A-Z][\w\.]*?)\s+([A-Z][\w\.]*)\s*
+    captures:
+      "1":
+        name: storage.type.purescript
+      "2":
+        name: constant.other.purescript
+
+  array:
+    patterns:
+    - include: '#array-function'
+    - include: '#array-op'
+
+  array-function:
+    name: support.function.array.purescript
+    match: \b(all|any|concat|concatMap|deleteAt|filter|find|foldl|foldr|head|indexOf|insertAt|isEmpty|joinS|joinWith|lastIndexOf|length|map|push|range|reverse|shift|singleton|slice|sort|tail|updateAt|zipWith)\b
+
+  array-op:
+    name: support.op.array.purescript
+    match: (:)
+
+  eff:
+    patterns:
+    - include: '#eff-data'
+    - include: '#eff-function'
+    - include: '#eff-type'
+
+  eff-data:
+    name: support.function.data.eff.purescript
+    match: \b(Eff)\b
+
+  eff-function:
+    name: support.function.eff.purescript
+    match: \b(bindEff|forE|foreachE|retEff|runPure|untilE|whileE)\b
+
+  eff-type:
+    name: support.type.eff.purescript
+    match: \b(Pure)\b
+
+  either:
+    patterns:
+    - include: '#either-data'
+    - include: '#either-function'
+
+  either-data:
+    name: support.function.data.either.purescript
+    match: \b(Left|Right)\b
+
+  either-function:
+    name: support.function.either.purescript
+    match: \b(either)\b
+
+  enum:
+    patterns:
+    - include: '#enum-function'
+    - include: '#enum-typeclass'
+
+  enum-function:
+    name: support.function.enum.purescript
+    match: \b(fromEnum|toEnum)\b
+
+  enum-typeclass:
+    name: storage.type.enum.purescript
+    match: \b(Enum)\b
+
+  error:
+    patterns:
+    - include: '#error-data'
+    - include: '#error-function'
+
+  error-data:
+    name: support.function.data.error.purescript
+    match: \b(Error)\b
+
+  error-function:
+    name: support.function.error.purescript
+    match: \b(catchError|throwError)\b
+
+  ffi:
+    patterns:
+    - begin: "\""
+      end: "\""
+      patterns:
+      - include: source.js
+
+  generic-tyvar:
+    name: variable.other.purescript
+    match: \b([a-z][\w']*)\b
+
+  global:
+    patterns:
+    - include: '#global-constant'
+    - include: '#global-function'
+
+  global-constant:
+    name: constant.support.global.purescript
+    match: \b(infinity|nan)\b
+
+  global-function:
+    name: support.function.global.purescript
+    match: \b(decodeURI|decodeURIComponent|encodeURI|encodeURIComponent|isFinite|isNaN|parseFloat|parseInt|toExponential|toFixed|toPrecision)\b
+
+  ioref:
+    patterns:
+    - include: '#ioref-data'
+    - include: '#ioref-function'
+
+  ioref-data:
+    name: support.function.data.ioref.purescript
+    match: \b(IORef|Ref)\b
+
+  ioref-function:
+    name: support.function.ioref.purescript
+    match: \b(modifyIORef|newIORef|readIORef|unsafeRunIORef|writeIORef)\b
+
+  math:
+    patterns:
+    - include: '#math-constant'
+    - include: '#math-function'
+
+  math-constant:
+    name: constant.support.math.purescript
+    match: \b(e|ln10|ln2|log10e|log2e|pi|sqrt1_2|sqrt2)\b
+
+  math-function:
+    name: support.function.math.purescript
+    match: \b(abs|aceil|acos|asin|atan|atan2|cos|exp|floor|log|max|min|pow|round|sin|sqrt|tan)\b
+
+  maybe:
+    patterns:
+    - include: '#maybe-data'
+    - include: '#maybe-function'
+
+  maybe-data:
+    name: support.function.data.maybe.purescript
+    match: \b(Just|Nothing)\b
+
+  maybe-function:
+    name: support.function.maybe.purescript
+    match: \b(maybe|fromMaybe)\b
+
+  module-name:
+    name: support.other.module.purescript
+    match: ([A-Za-z][\w\.']*)
+
+  monad:
+    patterns:
+    - include: '#monad-function'
+    - include: '#monad-op'
+
+  monad-function:
+    name: support.function.monad.purescript
+    match: \b(replicateM|mapM|sequence|join|foldM|when)\b
+
+  monad-op:
+    name: support.op.monad.purescript
+    match: (>=>|<=<)
+
+  monoid:
+    patterns:
+    - include: '#monoid-function'
+    - include: '#monoid-op'
+    - include: '#monoid-typeclass'
+
+  monoid-function:
+    name: support.function.monoid.purescript
+    match: \b(mconcat|mempty)\b
+
+  monoid-op:
+    name: support.op.monoid.purescript
+    match: (<>)
+
+  monoid-typeclass:
+    name: storage.type.monoid.purescript
+    match: \b(Monoid)\b
+
+  numbers:
+    name: constant.numeric.purescript
+    match: (?<!\w)(\b(\d+)|(\d+(\.\d+)?(e[+-]?\d+)?)\b)
+
+  prelude:
+    patterns:
+    - include: '#prelude-data'
+    - include: '#prelude-function'
+    - include: '#prelude-op'
+    - include: '#prelude-type'
+    - include: '#prelude-typeclass'
+
+  prelude-data:
+    name: support.function.data.prelude.purescript
+    match: \b(Ref)\b
+
+  prelude-function:
+    patterns:
+    - name: support.function.prelude.purescript
+      match: \b(const|flip)\b
+    - include: '#prelude-function-alternative'
+    - include: '#prelude-function-applicative'
+    - include: '#prelude-function-bits'
+    - include: '#prelude-function-boollike'
+    - include: '#prelude-function-category'
+    - include: '#prelude-function-monad'
+    - include: '#prelude-function-num'
+    - include: '#prelude-function-ord'
+    - include: '#prelude-function-read'
+    - include: '#prelude-function-ref'
+    - include: '#prelude-function-show'
+
+  prelude-function-alternative:
+    name: support.function.prelude.alternative.purescript
+    match: \b(empty)\b
+
+  prelude-function-applicative:
+    name: support.function.prelude.applicative.purescript
+    match: \b(pure)\b
+
+  prelude-function-bits:
+    name: support.function.prelude.bits.purescript
+    match: \b(complement|shl|shr|numAnd|numComplement|numOr|numShl|numShr|numXor|numZshr|zshr)\b
+
+  prelude-function-boollike:
+    name: support.function.prelude.boollike.purescript
+    match: \b(boolAnd|boolNot|boolOr|not)\b
+
+  prelude-function-category:
+    name: support.function.prelude.category.purescript
+    match: \b(id)\b
+
+  prelude-function-monad:
+    name: support.function.prelude.monad.purescript
+    match: \b(return)\b
+
+  prelude-function-num:
+    name: support.function.prelude.num.purescript
+    match: \b(negate|numAdd|numDiv|numMod|numMul|numNegate|numSub)\b
+
+  prelude-function-ord:
+    name: support.function.prelude.ord.purescript
+    match: \b(numLess|numLessEq|numGreater|numGreaterEq)\b
+
+  prelude-function-read:
+    name: support.function.prelude.read.purescript
+    match: \b(read|readNumber)\b
+
+  prelude-function-ref:
+    name: support.function.prelude.ref.purescript
+    match: \b(liftRef|refEq|refIneq|unsafeRefEq|unsafeRefIneq)\b
+
+  prelude-function-show:
+    name: support.function.prelude.show.purescript
+    match: \b(show|showNumber)\b
+
+  prelude-op:
+    patterns:
+    - name: support.type.op.prelude.purescript
+      match: (\$|#)
+    - include: '#prelude-op-alternative'
+    - include: '#prelude-op-applicative'
+    - include: '#prelude-op-bits'
+    - include: '#prelude-op-boollike'
+    - include: '#prelude-op-category'
+    - include: '#prelude-op-eq'
+    - include: '#prelude-op-functor'
+    - include: '#prelude-op-monad'
+    - include: '#prelude-op-num'
+    - include: '#prelude-op-ord'
+
+  prelude-op-alternative:
+    name: support.type.op.prelude.alternative.purescript
+    match: (<\|>)
+
+  prelude-op-applicative:
+    name: support.type.op.prelude.applicative.purescript
+    match: (<\*>)
+
+  prelude-op-bits:
+    name: support.type.op.prelude.bits.purescript
+    match: (&|\||\^)
+
+  prelude-op-boollike:
+    name: support.type.op.prelude.boollike.purescript
+    match: (&&|\|\||\^)
+
+  prelude-op-category:
+    name: support.type.op.prelude.category.purescript
+    match: (<<<|>>>)
+
+  prelude-op-eq:
+    name: support.type.op.prelude.eq.purescript
+    match: (==|/=)
+
+  prelude-op-functor:
+    name: support.type.op.prelude.functor.purescript
+    match: (<\$>)
+
+  prelude-op-monad:
+    name: support.type.op.prelude.monad.purescript
+    match: (>>=)
+
+  prelude-op-num:
+    name: support.type.op.prelude.num.purescript
+    match: (\+|\-|\*|/|%)
+
+  prelude-op-ord:
+    name: support.type.op.prelude.ord.purescript
+    match: (<|<=|>|>=)
+
+  prelude-type:
+    name: support.type.prelude.purescript
+    match: \b(Boolean|Number|String)\b
+
+  prelude-typeclass:
+    name: storage.type.prelude.purescript
+    match: \b(Alternative|Applicative|Bits|BoolLike|Category|Eq|Functor|Monad|Num|Ord|Read|Show)\b
+
+  random:
+    patterns:
+    - include: '#random-data'
+    - include: '#random-function'
+
+  random-data:
+    name: support.function.data.random.purescript
+    match: \b(Random)\b
+
+  random-function:
+    name: support.function.random.purescript
+    match: \b(random)\b
+
+  regex:
+    patterns:
+    - include: '#regex-data'
+    - include: '#regex-function'
+
+  regex-data:
+    name: support.function.data.regex.purescript
+    match: \b(Regex)\b
+
+  regex-function:
+    name: support.function.regex.purescript
+    match: \b(match|regex|replaceR|search|test)\b
+
+  reserveds:
+    patterns:
+    - include: '#reserveds-control'
+    - include: '#reserveds-other'
+    - include: '#reserveds-operator'
+
+  reserveds-control:
+    name: keyword.control.purescript
+    match: \b(case|do|else|if|in|let|of|then)\b
+
+  reserveds-other:
+    name: keyword.other.purescript
+    match: \b(as|class|data|forall|foreign|import|infix|infixl|infixr|instance|module|newtype|qualified|type|where)\b
+
+  reserveds-operator:
+    name: keyword.operator.purescript
+    match: =>|\->|=|\.|\\
+
+  st:
+    patterns:
+    - include: '#st-data'
+    - include: '#st-function'
+
+  st-data:
+    name: support.function.data.st.purescript
+    match: \b(ST|STRef|STArray)\b
+
+  st-function:
+    name: support.function.st.purescript
+    match: \b(modifySTRef|newSTArray|newSTRef|peekSTArray|pokeSTArray|readSTRef|runST|runSTArray|writeSTRef)\b
+
+  string:
+    patterns:
+    - include: '#string-function'
+
+  string-function:
+    name: support.function.string.purescript
+    match: \b(charAt|indexOfS|lastIndexOfS|lengthS|localeCompare|replace|sliceS|split|substr|substring|toLower|toUpper|trim)\b
+
+  strings:
+    patterns:
+    - name: invalid-strings
+      begin: \s+(')
+      end: (')
+      captures:
+        "1":
+          name: invalid.illegal.string.purescript
+      patterns:
+      - name: invalid.illegal.string.purescript
+        match: .
+    - name: string.quoted.double.purescript
+      begin: (\")
+      end: (\")
+      beginCaptures:
+        "0":
+          name: punctuation.definition.string.begin.purescript
+      endCaptures:
+        "0":
+          name: punctuation.definition.string.end.purescript
+      patterns:
+      - include: '#strings-escapes'
+
+  strings-escapes:
+    patterns:
+    - name: constant.character.escape
+      match: \\('|\"|\\|/|b|f|n|r|t|v|0|u[0-9a-fA-F]{4})
+
+  trace:
+    patterns:
+    - include: '#trace-data'
+    - include: '#trace-function'
+
+  trace-data:
+    name: support.function.data.trace.purescript
+    match: \b(Trace)\b
+
+  trace-function:
+    name: support.function.trace.purescript
+    match: \b(print|trace)\b
+
+  tuple:
+    patterns:
+    - include: '#tuple-function'
+
+  tuple-function:
+    name: support.function.tuple.purescript
+    match: \b(curry|uncurry|unzip|zip)\b
+
+  type-constraint:
+    patterns:
+    - name: meta.constraint.purescript
+      match: \s*([A-Z][\w.']*)\s+([A-Za-z][\w.']*)\s*(=>)
+      captures:
+        "1":
+          name: entity.other.inherited-class.purescript
+        "2":
+          name: variable.other.purescript
+        "3":
+          name: keyword.operator.purescript
+        "4":
+          name: storage.type.purescript
+    - name: meta.constraint.purescript
+      begin: (?=.*=>)\(
+      end: \)\s*(=>)
+      endCaptures:
+        "1":
+          name: keyword.operator.purescript
+      patterns:
+      - match: \s*([A-Z][\w.']*)\s+([A-Za-z][\w.']*)\s*
+        captures:
+          "1":
+            name: entity.other.inherited-class.purescript
+          "2":
+            name: variable.other.purescript
+
+  type-signature:
+    patterns:
+    - include: '#type-simple'
+    - include: '#type-constraint'
+
+  type-simple:
+    patterns:
+    - name: arrow.operator.purescript
+      match: \((->)\)|(->)
+      captures:
+        "1":
+          name: keyword.operator.purescript
+        "2":
+          name: keyword.operator.purescript
+    - name: storage.type.purescript
+      match: ([A-Z][\w.']*)
+    - include: '#generic-tyvar'
