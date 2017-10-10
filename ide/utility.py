@@ -11,6 +11,41 @@ def first_starts_with(arr, element):
     return None
 
 
+def is_in_module_word(char):
+    if "a" <= char <= "z" or "A" <= char <= "Z" or "0" < char < "9" or char == ".":
+        return True
+    return False
+
+def module_word(view, point):
+    region = view.word(point)
+    space_count = 0
+    for c in view.substr(region):
+        if c == ' ':
+            space_count += 1
+        else:
+            break
+    begin = region.begin() + space_count - 1
+
+    while True:
+        if begin < 0:
+            begin = 0
+            break
+        this_char = view.substr(sublime.Region(begin, begin+1))
+        if not is_in_module_word(this_char):
+            begin += 1
+            break
+        begin -= 1
+    module_word = view.substr(sublime.Region(begin, region.end()))
+    parts = module_word.split(".")
+    last = parts.pop()
+    module = None
+    if len(last) > 0:
+        module = ".".join(parts)
+    if module == '':
+        module = None
+    return (module, last)
+
+
 project_path_cache = {}
 def find_project_dir(view):
     file_path = view.file_name()

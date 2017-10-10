@@ -6,6 +6,7 @@ from .command import ( get_module_imports
                      , get_type )
 from .utility import ( find_project_dir
                      , PurescriptViewEventListener
+                     , module_word
                      )
 from .error import error_manager
 
@@ -87,12 +88,13 @@ class TypeHintEventListener(PurescriptViewEventListener):
     def show_type_hint(self, view, point):
         project_path = find_project_dir(view)
         module_info = get_module_imports(project_path, view.file_name())
-        word = view.substr(view.word(point))
+        module, word = module_word(view, point)
         if word == '':
             return
         if word[0] == '(' and word[-1] == ')':
             word = word[1:-1]
 
+        # TODO: use module from module_word to improve accuracy
         type_info = get_type(
             project_path,
             module_info['moduleName'],
