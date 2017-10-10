@@ -83,5 +83,9 @@ class CompletionEventListener(PurescriptViewEventListener):
 
         view.run_command('replace', {'text': '\n'.join(result)})
 
+        pos = view.word(view.sel()[0]).end()
+        view.sel().clear()
+        view.sel().add(sublime.Region(pos))
+
         # Prevent replace again when pressed undo
         self.last_completion_results = None
