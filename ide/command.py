@@ -210,7 +210,7 @@ class CodeCompleteThread(threading.Thread):
             self.prefix)
 
 
-def add_import(project_path, file_path, module, identifier):
+def add_import(project_path, file_path, module, identifier, qualifier=None):
     num, result = send_client_command(
         servers[project_path].port,
         {
@@ -223,10 +223,15 @@ def add_import(project_path, file_path, module, identifier):
                         "modules": [module]
                     }
                 }],
-                "importCommand": {
+                "importCommand": ({
                     "importCommand": "addImport",
-                    "identifier": identifier
-                }
+                    "identifier": identifier,
+                } if qualifier is None else
+                ({
+                    "importCommand": "addQualifiedImport",
+                    "module": module,
+                    "qualifier": qualifier,
+                }))
             }
         }
     )

@@ -9,6 +9,7 @@ from functools import wraps
 from .command import CodeCompleteThread, add_import, log
 from .utility import ( find_project_dir
                      , PurescriptViewEventListener
+                     , module_word
                      )
 from .settings import get_settings
 
@@ -24,6 +25,7 @@ class CompletionEventListener(PurescriptViewEventListener):
             return
 
         project_path = find_project_dir(view)
+        module_alias, _ = module_word(view, locations[0])
 
         this_thread = CodeCompleteThread(project_path, prefix)
         this_thread.start()
@@ -42,6 +44,7 @@ class CompletionEventListener(PurescriptViewEventListener):
             str_to_display = r['identifier']+'\t'+r['type']
             if str_to_display in self.last_completion_results:
                 continue
+            r['module_alias'] = module_alias
             self.last_completion_results[str_to_display] = r
             completions.append([str_to_display, r['identifier']])
         return completions
@@ -74,7 +77,8 @@ class CompletionEventListener(PurescriptViewEventListener):
             project_path,
             temp_file.name,
             completion['module'],
-            completion['identifier'])
+            completion['identifier'],
+            qualifier=completion['module_alias'])
         os.unlink(temp_file.name)
 
         view.run_command('replace', {'text': '\n'.join(result)})
