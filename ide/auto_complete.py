@@ -6,7 +6,7 @@ import os
 import webbrowser
 from functools import wraps
 
-from .command import CodeCompleteThread, add_import, log
+from .command import CodeCompleteThread, ModuleCompleteThread, add_import, log
 from .utility import ( find_project_dir
                      , PurescriptViewEventListener
                      , module_word
@@ -18,13 +18,54 @@ class CompletionEventListener(PurescriptViewEventListener):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last_completion_results = None
+        auto = self.view.settings().get('auto_complete_triggers')
+        auto.append({"selector": "source.purescript", "characters": "."})
+        self.view.settings().set('auto_complete_triggers', auto)
 
     def on_query_completions(self, prefix, locations):
         view = self.view
         if view.file_name() is None:
             return
 
+        line_str = view.substr(view.line(view.sel()[0]))
+        if line_str.startswith('import '):
+            # module complete
+            return self.get_completion_for_import(prefix, locations)
+        else:
+            return self.get_completion_for_identifier(prefix, locations)
+
+    def get_completion_for_import(self, prefix, locations):
+        view = self.view
         project_path = find_project_dir(view)
+
+        module_prefix, identifier = module_word(view, locations[0])
+        if module_prefix is None:
+            full_module_prefix = identifier
+        else:
+            full_module_prefix = module_prefix + '.' + identifier
+
+        this_thread = ModuleCompleteThread(project_path, full_module_prefix)
+        this_thread.start()
+
+        timeout = get_settings('auto_complete_timeout', None)
+        this_thread.join(timeout=timeout)
+
+        if this_thread.return_val is None:
+            log('autocomplete probably timeout')
+            return
+
+        self.last_completion_results = {}
+        completions = []
+
+        for m in this_thread.return_val:
+            completion = m if module_prefix is None else m.strip(module_prefix + '.')
+            completions.append([completion, completion])
+        return completions
+
+    def get_completion_for_identifier(self, prefix, locations):
+        view = self.view
+        project_path = find_project_dir(view)
+
         module_alias, _ = module_word(view, locations[0])
 
         this_thread = CodeCompleteThread(project_path, prefix)
@@ -42,9 +83,16 @@ class CompletionEventListener(PurescriptViewEventListener):
 
         for r in this_thread.return_val:
             str_to_display = r['identifier']+'\t'+r['module']+'\t'+r['type']
+
+            # Remove completely duplicated entry
             if str_to_display in self.last_completion_results:
                 continue
+
+            # module alias for qualified import
             r['module_alias'] = module_alias
+            # In order to know which completion the user selected
+            # we have to save all completions, and catch the completion
+            # event in on_modified_async
             self.last_completion_results[str_to_display] = r
             completions.append([str_to_display, r['identifier']])
         return completions
