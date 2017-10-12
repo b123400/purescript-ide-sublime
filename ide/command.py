@@ -100,6 +100,8 @@ def get_purs_path():
 
 # Path: Thread
 servers = {}
+# Path: [String] (module name)
+projects_modules = {}
 
 class Server(threading.Thread):
     def __init__(self, project_path):
@@ -158,7 +160,8 @@ def stop_server(project_path):
     return send_quit_command(servers[project_path].port)
 
 def stop_all_servers():
-    for project_path in servers:
+    # Avoid "changing dict size while looping dict" issue
+    for project_path in list(servers.keys()):
         stop_server(project_path)
 
 def send_client_command(port, json_obj):
@@ -206,6 +209,44 @@ class CodeCompleteThread(threading.Thread):
 
     def run(self):
         self.return_val = get_code_complete(
+            self.project_path,
+            self.prefix)
+
+
+def get_module_complete(project_path, prefix):
+    if project_path not in servers:
+        log('Server for path ', project_path, ' is not running')
+        return
+
+    modules = projects_modules.get(project_path, None)
+
+    if modules is None:
+        num, result = send_client_command(
+        servers[project_path].port,
+        {
+            "command": "list",
+            "params": {
+                "type": "availableModules"
+            }
+        })
+        result = json.loads(result)
+        if result['resultType'] != 'success':
+            return None
+        modules = result['result']
+        projects_modules[project_path] = modules
+
+    return [m for m in modules if m.lower().startswith(prefix.lower())]
+
+
+class ModuleCompleteThread(threading.Thread):
+    def __init__(self, project_path, prefix):
+        super().__init__()
+        self.project_path = project_path
+        self.prefix = prefix
+        self.return_val = None
+
+    def run(self):
+        self.return_val = get_module_complete(
             self.project_path,
             self.prefix)
 
@@ -296,6 +337,8 @@ def rebuild(project_path, file_path):
         }
     )
     result = json.loads(result)
+    # Clean modules cache for auto complete
+    projects_modules.pop(project_path, None)
     return result['result']
 
 
