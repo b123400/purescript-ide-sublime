@@ -37,9 +37,9 @@ def module_word(view, point):
         begin -= 1
     module_word = view.substr(sublime.Region(begin, region.end()))
     parts = module_word.split(".")
-    last = parts.pop()
+    last = parts.pop().replace('\n', '')
     module = None
-    if len(last) > 0:
+    if len(parts) > 0:
         module = ".".join(parts)
     if module == '':
         module = None
