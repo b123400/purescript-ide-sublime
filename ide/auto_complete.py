@@ -41,7 +41,7 @@ class CompletionEventListener(PurescriptViewEventListener):
         completions = []
 
         for r in this_thread.return_val:
-            str_to_display = r['identifier']+'\t'+r['type']
+            str_to_display = r['identifier']+'\t'+r['module']+'\t'+r['type']
             if str_to_display in self.last_completion_results:
                 continue
             r['module_alias'] = module_alias
