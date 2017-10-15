@@ -98,6 +98,8 @@ patterns:
 - include: '#constants'
 - include: '#numbers'
 - include: '#strings'
+# Monoid has to be in front of Prelude because <> is parsed as Ord
+- include: '#monoid'
 - include: '#prelude'
 - include: '#array'
 - include: '#eff'
@@ -109,7 +111,6 @@ patterns:
 - include: '#math'
 - include: '#maybe'
 - include: '#monad'
-- include: '#monoid'
 - include: '#random'
 - include: '#regex'
 - include: '#st'

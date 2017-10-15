@@ -256,6 +256,10 @@
 		</dict>
 		<dict>
 			<key>include</key>
+			<string>#monoid</string>
+		</dict>
+		<dict>
+			<key>include</key>
 			<string>#prelude</string>
 		</dict>
 		<dict>
@@ -297,10 +301,6 @@
 		<dict>
 			<key>include</key>
 			<string>#monad</string>
-		</dict>
-		<dict>
-			<key>include</key>
-			<string>#monoid</string>
 		</dict>
 		<dict>
 			<key>include</key>
