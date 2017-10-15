@@ -359,7 +359,7 @@
 			<key>match</key>
 			<string>(:)</string>
 			<key>name</key>
-			<string>support.op.array.purescript</string>
+			<string>keyword.operator.array.purescript</string>
 		</dict>
 		<key>comments</key>
 		<dict>
@@ -707,7 +707,7 @@
 			<key>match</key>
 			<string>(&gt;=&gt;|&lt;=&lt;)</string>
 			<key>name</key>
-			<string>support.op.monad.purescript</string>
+			<string>keyword.operator.monad.purescript</string>
 		</dict>
 		<key>monoid</key>
 		<dict>
@@ -739,7 +739,7 @@
 			<key>match</key>
 			<string>(&lt;&gt;)</string>
 			<key>name</key>
-			<string>support.op.monoid.purescript</string>
+			<string>keyword.operator.monoid.purescript</string>
 		</dict>
 		<key>monoid-typeclass</key>
 		<dict>
@@ -929,7 +929,7 @@
 					<key>match</key>
 					<string>(\$|#)</string>
 					<key>name</key>
-					<string>support.type.op.prelude.purescript</string>
+					<string>keyword.operator.prelude.purescript</string>
 				</dict>
 				<dict>
 					<key>include</key>
@@ -978,70 +978,70 @@
 			<key>match</key>
 			<string>(&lt;\|&gt;)</string>
 			<key>name</key>
-			<string>support.type.op.prelude.alternative.purescript</string>
+			<string>keyword.operator.prelude.alternative.purescript</string>
 		</dict>
 		<key>prelude-op-applicative</key>
 		<dict>
 			<key>match</key>
 			<string>(&lt;\*&gt;)</string>
 			<key>name</key>
-			<string>support.type.op.prelude.applicative.purescript</string>
+			<string>keyword.operator.prelude.applicative.purescript</string>
 		</dict>
 		<key>prelude-op-bits</key>
 		<dict>
 			<key>match</key>
 			<string>(&amp;|\||\^)</string>
 			<key>name</key>
-			<string>support.type.op.prelude.bits.purescript</string>
+			<string>keyword.operator.prelude.bits.purescript</string>
 		</dict>
 		<key>prelude-op-boollike</key>
 		<dict>
 			<key>match</key>
 			<string>(&amp;&amp;|\|\||\^)</string>
 			<key>name</key>
-			<string>support.type.op.prelude.boollike.purescript</string>
+			<string>keyword.operator.prelude.boollike.purescript</string>
 		</dict>
 		<key>prelude-op-category</key>
 		<dict>
 			<key>match</key>
 			<string>(&lt;&lt;&lt;|&gt;&gt;&gt;)</string>
 			<key>name</key>
-			<string>support.type.op.prelude.category.purescript</string>
+			<string>keyword.operator.prelude.category.purescript</string>
 		</dict>
 		<key>prelude-op-eq</key>
 		<dict>
 			<key>match</key>
 			<string>(==|/=)</string>
 			<key>name</key>
-			<string>support.type.op.prelude.eq.purescript</string>
+			<string>keyword.operator.prelude.eq.purescript</string>
 		</dict>
 		<key>prelude-op-functor</key>
 		<dict>
 			<key>match</key>
 			<string>(&lt;\$&gt;)</string>
 			<key>name</key>
-			<string>support.type.op.prelude.functor.purescript</string>
+			<string>keyword.operator.prelude.functor.purescript</string>
 		</dict>
 		<key>prelude-op-monad</key>
 		<dict>
 			<key>match</key>
 			<string>(&gt;&gt;=)</string>
 			<key>name</key>
-			<string>support.type.op.prelude.monad.purescript</string>
+			<string>keyword.operator.prelude.monad.purescript</string>
 		</dict>
 		<key>prelude-op-num</key>
 		<dict>
 			<key>match</key>
 			<string>(\+|\-|\*|/|%)</string>
 			<key>name</key>
-			<string>support.type.op.prelude.num.purescript</string>
+			<string>keyword.operator.prelude.num.purescript</string>
 		</dict>
 		<key>prelude-op-ord</key>
 		<dict>
 			<key>match</key>
 			<string>(&lt;|&lt;=|&gt;|&gt;=)</string>
 			<key>name</key>
-			<string>support.type.op.prelude.ord.purescript</string>
+			<string>keyword.operator.prelude.ord.purescript</string>
 		</dict>
 		<key>prelude-type</key>
 		<dict>

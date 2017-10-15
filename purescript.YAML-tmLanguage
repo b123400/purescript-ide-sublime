@@ -154,7 +154,7 @@ repository:
     match: \b(all|any|concat|concatMap|deleteAt|filter|find|foldl|foldr|head|indexOf|insertAt|isEmpty|joinS|joinWith|lastIndexOf|length|map|push|range|reverse|shift|singleton|slice|sort|tail|updateAt|zipWith)\b
 
   array-op:
-    name: support.op.array.purescript
+    name: keyword.operator.array.purescript
     match: (:)
 
   eff:
@@ -291,7 +291,7 @@ repository:
     match: \b(replicateM|mapM|sequence|join|foldM|when)\b
 
   monad-op:
-    name: support.op.monad.purescript
+    name: keyword.operator.monad.purescript
     match: (>=>|<=<)
 
   monoid:
@@ -305,8 +305,8 @@ repository:
     match: \b(mconcat|mempty)\b
 
   monoid-op:
-    name: support.op.monoid.purescript
-    match: (<>)
+    name: keyword.operator.monoid.purescript
+    match: '(<>)'
 
   monoid-typeclass:
     name: storage.type.monoid.purescript
@@ -390,7 +390,7 @@ repository:
 
   prelude-op:
     patterns:
-    - name: support.type.op.prelude.purescript
+    - name: keyword.operator.prelude.purescript
       match: (\$|#)
     - include: '#prelude-op-alternative'
     - include: '#prelude-op-applicative'
@@ -404,43 +404,43 @@ repository:
     - include: '#prelude-op-ord'
 
   prelude-op-alternative:
-    name: support.type.op.prelude.alternative.purescript
+    name: keyword.operator.prelude.alternative.purescript
     match: (<\|>)
 
   prelude-op-applicative:
-    name: support.type.op.prelude.applicative.purescript
+    name: keyword.operator.prelude.applicative.purescript
     match: (<\*>)
 
   prelude-op-bits:
-    name: support.type.op.prelude.bits.purescript
+    name: keyword.operator.prelude.bits.purescript
     match: (&|\||\^)
 
   prelude-op-boollike:
-    name: support.type.op.prelude.boollike.purescript
+    name: keyword.operator.prelude.boollike.purescript
     match: (&&|\|\||\^)
 
   prelude-op-category:
-    name: support.type.op.prelude.category.purescript
+    name: keyword.operator.prelude.category.purescript
     match: (<<<|>>>)
 
   prelude-op-eq:
-    name: support.type.op.prelude.eq.purescript
+    name: keyword.operator.prelude.eq.purescript
     match: (==|/=)
 
   prelude-op-functor:
-    name: support.type.op.prelude.functor.purescript
+    name: keyword.operator.prelude.functor.purescript
     match: (<\$>)
 
   prelude-op-monad:
-    name: support.type.op.prelude.monad.purescript
+    name: keyword.operator.prelude.monad.purescript
     match: (>>=)
 
   prelude-op-num:
-    name: support.type.op.prelude.num.purescript
+    name: keyword.operator.prelude.num.purescript
     match: (\+|\-|\*|/|%)
 
   prelude-op-ord:
-    name: support.type.op.prelude.ord.purescript
+    name: keyword.operator.prelude.ord.purescript
     match: (<|<=|>|>=)
 
   prelude-type:
