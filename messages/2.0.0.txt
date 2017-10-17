@@ -1,0 +1,7 @@
+Hello, welcome to the new version of the Purescript sublime package!
+Since 2.0.0, the Purescript package is combined with Purescript IDE,
+which integrates pse-ide into the editor to provide functions such
+as auto-complete, type-hints, rebuild and error report.
+
+This package automatically searches for the `purs` binary in your PATH
+and execute it. You can also customise the binary path in preference.
