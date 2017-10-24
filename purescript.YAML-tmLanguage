@@ -445,7 +445,7 @@ repository:
 
   prelude-type:
     name: support.type.prelude.purescript
-    match: \b(Boolean|Number|String)\b
+    match: \b(Boolean|Number|Int|Char|String|Array)\b
 
   prelude-typeclass:
     name: storage.type.prelude.purescript
