@@ -1351,9 +1351,9 @@
 				</dict>
 				<dict>
 					<key>begin</key>
-					<string>(?=.*=&gt;)\(</string>
+					<string>(?=.*=&lt;)\(</string>
 					<key>end</key>
-					<string>\)\s*(=&gt;)</string>
+					<string>\)\s*(=&lt;)</string>
 					<key>endCaptures</key>
 					<dict>
 						<key>1</key>

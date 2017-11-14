@@ -579,8 +579,8 @@ repository:
         "4":
           name: storage.type.purescript
     - name: meta.constraint.purescript
-      begin: (?=.*=>)\(
-      end: \)\s*(=>)
+      begin: (?=.*<=)\(
+      end: \)\s*(<=)
       endCaptures:
         "1":
           name: keyword.operator.purescript
