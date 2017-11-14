@@ -16,10 +16,19 @@ def is_in_module_word(char):
         return True
     return False
 
+def is_operator(string):
+    for char in string:
+        if "a" <= char <= "z" or "A" <= char <= "Z" or "0" < char < "9":
+            return False
+    return True
+
 def module_word(view, point):
     region = view.word(point)
     space_count = 0
-    for c in view.substr(region):
+    view_word = view.substr(region)
+    if is_operator(view_word):
+        return (None, view_word)
+    for c in view_word:
         if c == ' ':
             space_count += 1
         else:
