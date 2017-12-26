@@ -1046,7 +1046,7 @@
 		<key>prelude-type</key>
 		<dict>
 			<key>match</key>
-			<string>\b(Boolean|Number|String)\b</string>
+			<string>\b(Boolean|Number|Int|Char|String|Array)\b</string>
 			<key>name</key>
 			<string>support.type.prelude.purescript</string>
 		</dict>
