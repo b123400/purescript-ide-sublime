@@ -3,6 +3,8 @@ import subprocess
 import threading
 import json
 import time
+import sys
+import re
 from .settings import get_settings
 
 
@@ -55,14 +57,34 @@ def run_command(commands, stdin_text=None, path=None):
         TERM='ansi',
         CLICOLOR='',
         PATH=env_path)
+    for k, v in new_env.items():
+        new_env[k] = os.path.expandvars(v)
     log('running: ', commands)
-    proc = subprocess.Popen(
-        commands,
-        env=new_env,
-        stdin=(None if stdin_text is None else subprocess.PIPE),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-    )
+
+    # Hide the console window on Windows
+    startupinfo = None
+    if sys.platform == "win32":
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        proc = subprocess.Popen(
+            commands[0] + ' ' + ' '.join([cmd_escape_argument(a) for a in commands[1:]]),
+            env=new_env,
+            stdin=(None if stdin_text is None else subprocess.PIPE),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            startupinfo=startupinfo,
+            # TBH I dont know why windows need shell to work
+            shell=True,
+        )
+    else:
+        proc = subprocess.Popen(
+            commands,
+            env=new_env,
+            stdin=(None if stdin_text is None else subprocess.PIPE),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            startupinfo=startupinfo,
+        )
     if stdin_text is not None:
         proc.stdin.write(stdin_text.encode('utf-8'))
         proc.stdin.close()
@@ -352,3 +374,46 @@ def rebuild(project_path, file_path):
 
 def plugin_unloaded():
     stop_all_servers()
+
+
+
+# The follow codes are copied from
+# https://stackoverflow.com/a/29215357/
+
+def cmd_escape_argument(arg):
+    # Escape the argument for the cmd.exe shell.
+    # See http://blogs.msdn.com/b/twistylittlepassagesallalike/archive/2011/04/23/everyone-quotes-arguments-the-wrong-way.aspx
+    #
+    # First we escape the quote chars to produce a argument suitable for
+    # CommandLineToArgvW. We don't need to do this for simple arguments.
+
+    if not arg or re.search(r'(["\s])', arg):
+        arg = '"' + arg.replace('"', r'\"') + '"'
+
+    return escape_for_cmd_exe(arg)
+
+def escape_for_cmd_exe(arg):
+    # Escape an argument string to be suitable to be passed to
+    # cmd.exe on Windows
+    #
+    # This method takes an argument that is expected to already be properly
+    # escaped for the receiving program to be properly parsed. This argument
+    # will be further escaped to pass the interpolation performed by cmd.exe
+    # unchanged.
+    #
+    # Any meta-characters will be escaped, removing the ability to e.g. use
+    # redirects or variables.
+    #
+    # @param arg [String] a single command line argument to escape for cmd.exe
+    # @return [String] an escaped string suitable to be passed as a program
+    #   argument to cmd.exe
+
+    meta_chars = '()%!^"<>&|'
+    meta_re = re.compile('(' + '|'.join(re.escape(char) for char in list(meta_chars)) + ')')
+    meta_map = { char: "^%s" % char for char in meta_chars }
+
+    def escape_meta_chars(m):
+        char = m.group(1)
+        return meta_map[char]
+
+    return meta_re.sub(escape_meta_chars, arg)
