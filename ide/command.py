@@ -89,7 +89,10 @@ def get_purs_path():
 
     if not purs_path_cache:
         try:
-            num, result = run_command(['which', 'purs'])
+            if shell_cmd and sys.platform == "win32":
+                num, result = run_command(['where', 'purs.cmd'])
+            else:
+                num, result = run_command(['which', 'purs'])
             if num != 0:
                 raise Exception()
             purs_path_cache = result.replace('\n', '')
