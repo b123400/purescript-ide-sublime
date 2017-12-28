@@ -89,6 +89,7 @@ contexts:
     - include: constants
     - include: numbers
     - include: strings
+    - include: operator
     - include: monoid
     - include: prelude
     - include: array
@@ -226,33 +227,28 @@ contexts:
       scope: support.other.module.purescript
   monad:
     - include: monad-function
-    - include: monad-op
   monad-function:
     - match: \b(replicateM|mapM|sequence|join|foldM|when)\b
       scope: support.function.monad.purescript
-  monad-op:
-    - match: (>=>|<=<)
-      scope: keyword.operator.monad.purescript
   monoid:
     - include: monoid-function
-    - include: monoid-op
     - include: monoid-typeclass
   monoid-function:
     - match: \b(mconcat|mempty)\b
       scope: support.function.monoid.purescript
-  monoid-op:
-    - match: (<>)
-      scope: keyword.operator.monoid.purescript
   monoid-typeclass:
     - match: \b(Monoid)\b
       scope: storage.type.monoid.purescript
   numbers:
     - match: '(?<!\w)(\b(\d+)|(\d+(\.\d+)?(e[+-]?\d+)?)\b)'
       scope: constant.numeric.purescript
+  operator:
+    - match: '[|!%$#?~+:\-.=</>\\]+'
+      comment: In case this regex seems overly general, note that Purescript permits the definition of new operators which can be nearly any string of punctuation characters, such as $%^&*.
+      scope: keyword.operator.purescript
   prelude:
     - include: prelude-data
     - include: prelude-function
-    - include: prelude-op
     - include: prelude-type
     - include: prelude-typeclass
   prelude-data:
@@ -305,49 +301,6 @@ contexts:
   prelude-function-show:
     - match: \b(show|showNumber)\b
       scope: support.function.prelude.show.purescript
-  prelude-op:
-    - match: (\$|#)
-      scope: keyword.operator.prelude.purescript
-    - include: prelude-op-alternative
-    - include: prelude-op-applicative
-    - include: prelude-op-bits
-    - include: prelude-op-boollike
-    - include: prelude-op-category
-    - include: prelude-op-eq
-    - include: prelude-op-functor
-    - include: prelude-op-monad
-    - include: prelude-op-num
-    - include: prelude-op-ord
-  prelude-op-alternative:
-    - match: (<\|>)
-      scope: keyword.operator.prelude.alternative.purescript
-  prelude-op-applicative:
-    - match: (<\*>)
-      scope: keyword.operator.prelude.applicative.purescript
-  prelude-op-bits:
-    - match: (&|\||\^)
-      scope: keyword.operator.prelude.bits.purescript
-  prelude-op-boollike:
-    - match: (&&|\|\||\^)
-      scope: keyword.operator.prelude.boollike.purescript
-  prelude-op-category:
-    - match: (<<<|>>>)
-      scope: keyword.operator.prelude.category.purescript
-  prelude-op-eq:
-    - match: (==|/=)
-      scope: keyword.operator.prelude.eq.purescript
-  prelude-op-functor:
-    - match: (<\$>)
-      scope: keyword.operator.prelude.functor.purescript
-  prelude-op-monad:
-    - match: (>>=)
-      scope: keyword.operator.prelude.monad.purescript
-  prelude-op-num:
-    - match: (\+|\-|\*|/|%)
-      scope: keyword.operator.prelude.num.purescript
-  prelude-op-ord:
-    - match: (<|<=|>|>=)
-      scope: keyword.operator.prelude.ord.purescript
   prelude-type:
     - match: \b(Boolean|Number|Int|Char|String|Array)\b
       scope: support.type.prelude.purescript
@@ -380,8 +333,8 @@ contexts:
     - match: \b(case|do|else|if|in|let|of|then)\b
       scope: keyword.control.purescript
   reserveds-operator:
-    - match: '=>|\->|=|\.|\\'
-      scope: keyword.operator.purescript
+    - match: '=>|\->|=|\\'
+      scope: keyword.operator.reserved.purescript
   reserveds-other:
     - match: \b(as|class|data|forall|foreign|import|infix|infixl|infixr|instance|module|newtype|qualified|type|where)\b
       scope: keyword.other.purescript
