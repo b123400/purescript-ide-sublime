@@ -14,6 +14,11 @@ def log(*args):
 path_cache = None
 def guess_path():
     global path_cache
+
+    # Adding interesting things to path will causes windows' `where` to fail
+    if sys.platform == "win32":
+        return os.environ['PATH']
+
     if path_cache is None:
         try:
             shell = os.environ['SHELL']
