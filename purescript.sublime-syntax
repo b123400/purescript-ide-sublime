@@ -392,24 +392,14 @@ contexts:
     - match: \b(curry|uncurry|unzip|zip)\b
       scope: support.function.tuple.purescript
   type-constraint:
-    - match: '\s*([A-Z][\w.'']*)\s+([A-Za-z][\w.'']*)\s*(=>)'
+    - match: '\s*(?:([A-Z][\w.'']*)(?:\s+([a-z_][\w.'']*))+ | \(([A-Z][\w.'']*)(?:\s+([a-z_][\w.'']*))+\))\s*(=>)'
       scope: meta.constraint.purescript
       captures:
         1: entity.other.inherited-class.purescript
         2: variable.other.purescript
-        3: keyword.operator.purescript
-        4: storage.type.purescript
-    - match: (?=.*=<)\(
-      push:
-        - meta_scope: meta.constraint.purescript
-        - match: \)\s*(=<)
-          captures:
-            1: keyword.operator.purescript
-          pop: true
-        - match: '\s*([A-Z][\w.'']*)\s+([A-Za-z][\w.'']*)\s*'
-          captures:
-            1: entity.other.inherited-class.purescript
-            2: variable.other.purescript
+        3: entity.other.inherited-class.purescript
+        4: variable.other.purescript
+        5: keyword.operator.purescript
   type-signature:
     - include: type-simple
     - include: type-constraint
