@@ -89,6 +89,10 @@ def ignore_non_purescript(f):
 
 class PurescriptViewEventListener(sublime_plugin.ViewEventListener):
 
+    # We need this to fix infinity recursion :(
+    def __init__(self, *args, **kwargs):
+        super(PurescriptViewEventListener, self).__init__(*args, **kwargs)
+
     @classmethod
     def is_applicable(cls, settings):
         syntax = settings.get('syntax')

@@ -16,7 +16,7 @@ from .settings import get_settings
 
 class CompletionEventListener(PurescriptViewEventListener):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(CompletionEventListener, self).__init__(*args, **kwargs)
         self.last_completion_results = None
         auto = self.view.settings().get('auto_complete_triggers')
         auto.append({"selector": "source.purescript", "characters": "."})
