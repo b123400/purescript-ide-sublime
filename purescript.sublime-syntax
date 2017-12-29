@@ -328,13 +328,9 @@ contexts:
   reserveds:
     - include: reserveds-control
     - include: reserveds-other
-    - include: reserveds-operator
   reserveds-control:
     - match: \b(case|do|else|if|in|let|of|then)\b
       scope: keyword.control.purescript
-  reserveds-operator:
-    - match: '=>|\->|=|\\'
-      scope: keyword.operator.reserved.purescript
   reserveds-other:
     - match: \b(as|class|data|forall|foreign|import|infix|infixl|infixr|instance|module|newtype|qualified|type|where)\b
       scope: keyword.other.purescript
