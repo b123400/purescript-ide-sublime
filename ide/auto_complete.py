@@ -6,7 +6,11 @@ import os
 import webbrowser
 from functools import wraps
 
-from .command import CodeCompleteThread, ModuleCompleteThread, add_import, log
+from .command import ( CodeCompleteThread
+                     , ModuleCompleteThread
+                     , add_import
+                     , log
+                     , get_module_imports)
 from .utility import ( find_project_dir
                      , PurescriptViewEventListener
                      , module_word
@@ -18,9 +22,14 @@ class CompletionEventListener(PurescriptViewEventListener):
     def __init__(self, *args, **kwargs):
         super(CompletionEventListener, self).__init__(*args, **kwargs)
         self.last_completion_results = None
+        self.last_completions = None
+        self.current_completion_prefix = None
+
+        # Make autocomplete shows after "."
         auto = self.view.settings().get('auto_complete_triggers')
         auto.append({"selector": "source.purescript", "characters": "."})
         self.view.settings().set('auto_complete_triggers', auto)
+
 
     def on_query_completions(self, prefix, locations):
         view = self.view
@@ -55,47 +64,53 @@ class CompletionEventListener(PurescriptViewEventListener):
             return
 
         self.last_completion_results = {}
-        completions = []
+        self.last_completions = []
 
         for m in this_thread.return_val:
             completion = m if module_prefix is None else m.strip(module_prefix + '.')
-            completions.append([completion, completion])
-        return completions
+            self.last_completions.append([completion, completion])
+        return self.last_completions
 
     def get_completion_for_identifier(self, prefix, locations):
         view = self.view
         project_path = find_project_dir(view)
-
         module_alias, _ = module_word(view, locations[0])
 
-        this_thread = CodeCompleteThread(project_path, prefix)
-        this_thread.start()
+        if self.current_completion_prefix != prefix:
+            self.current_completion_prefix = prefix
+            self.last_completion_results = {}
+            self.last_completions = []
+            def callback(_prefix, result):
+                if _prefix != self.current_completion_prefix:
+                    # We have new input so this result is discarded
+                    return
+                for r in result:
+                    str_to_display = r['identifier']+'\t'+r['module']+'\t'+r['type']
 
-        timeout = get_settings('auto_complete_timeout', None)
-        this_thread.join(timeout=timeout)
+                    # Remove completely duplicated entry
+                    if str_to_display in self.last_completion_results:
+                        continue
 
-        if this_thread.return_val is None:
-            log('autocomplete probably timeout')
-            return
+                    # module alias for qualified import
+                    r['module_alias'] = module_alias
+                    # In order to know which completion the user selected
+                    # we have to save all completions, and catch the completion
+                    # event in on_modified_async
+                    self.last_completion_results[str_to_display] = r
+                    self.last_completions.append([str_to_display, r['identifier']])
 
-        self.last_completion_results = {}
-        completions = []
+                # Force query auto complete
+                if view.is_auto_complete_visible():
+                    view.window().run_command('hide_auto_complete')
+                view.window().run_command('auto_complete', {'disable_auto_insert': True})
 
-        for r in this_thread.return_val:
-            str_to_display = r['identifier']+'\t'+r['module']+'\t'+r['type']
+            this_thread = CodeCompleteThread(project_path, prefix, callback)
+            this_thread.start()
 
-            # Remove completely duplicated entry
-            if str_to_display in self.last_completion_results:
-                continue
+            return []
 
-            # module alias for qualified import
-            r['module_alias'] = module_alias
-            # In order to know which completion the user selected
-            # we have to save all completions, and catch the completion
-            # event in on_modified_async
-            self.last_completion_results[str_to_display] = r
-            completions.append([str_to_display, r['identifier']])
-        return completions
+        else:
+            return self.last_completions
 
     def on_modified_async(self):
         # Import the module after the user selected the auto complete

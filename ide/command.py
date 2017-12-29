@@ -231,16 +231,18 @@ def get_code_complete(project_path, prefix):
 
 
 class CodeCompleteThread(threading.Thread):
-    def __init__(self, project_path, prefix):
+    def __init__(self, project_path, prefix, callback):
         super().__init__()
         self.project_path = project_path
         self.prefix = prefix
-        self.return_val = None
+        self.callback = callback
 
     def run(self):
-        self.return_val = get_code_complete(
+        result = get_code_complete(
             self.project_path,
-            self.prefix)
+            self.prefix
+        )
+        self.callback(self.prefix, result)
 
 
 def get_module_complete(project_path, prefix):
