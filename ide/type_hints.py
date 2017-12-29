@@ -1,6 +1,7 @@
 import sublime
 import sublime_plugin
 import webbrowser
+import html
 
 from .command import ( get_module_imports
                      , get_type )
@@ -27,7 +28,7 @@ class TypeHintEventListener(PurescriptViewEventListener):
 
     def show_error(self, view, error, point):
         error_message_lines = error['message'].split('\n')
-        error_message = "".join(['<p>%s</p>' % s.replace(' ', '&nbsp;') for s in error_message_lines])
+        error_message = "".join(['<p>%s</p>' % html.escape(s) for s in error_message_lines])
 
         handle_nav = None
         def default_handle_nav(href):
