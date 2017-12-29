@@ -21,7 +21,32 @@ contexts:
       captures:
         1: keyword.other.purescript
       push:
-        - meta_scope: meta.declaration.import.purescript
+        - meta_scope: keyword.control.import.purescript
+        - match: '([A-Za-z0-9.]*)\s*'
+          captures:
+            1: support.other.module.purescript
+        - match: \(
+          push:
+            - match: ',?\s*([A-Z][\w'']*)\s*(?:\(([A-Z][\w\s,'']*|..)\))?'
+              captures:
+                1: entity.name.type.purescript
+                2: entity.name.function.constructor.purescript
+            - match: ',?\s?class\s+([A-Z][\w'']*)'
+              captures:
+                1: entity.name.typeclass.purescript
+            - match: ',?\s?([\w'']*)'
+              captures:
+                1: entity.name.function
+            - match: \)
+              pop: true
+        - match: '(as)\s+([A-Z][\w'']*)'
+          captures:
+            1: keyword.control.import.as
+            2: support.other.module.purescript
+        - match: '(hiding)\s+\((?:,?\s?([A-Z][\w'']*))+\)'
+          meta_scope: meta.section.module.purescript
+          captures:
+            1: keyword.control.import.hiding.purescript
         - match: $
           pop: true
         - include: module-name
@@ -29,7 +54,7 @@ contexts:
       captures:
         1: keyword.other.purescript
       push:
-        - meta_scope: meta.declaration.type.purescript
+        - meta_scope: entity.name.type.purescript
         - match: $
           pop: true
         - include: type-simple
