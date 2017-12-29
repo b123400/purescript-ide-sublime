@@ -110,6 +110,13 @@ class CompletionEventListener(PurescriptViewEventListener):
             return
 
         project_path = find_project_dir(view)
+
+        if completion.get('module_alias') is not None:
+            file_imports = get_module_imports(project_path, view.file_name())['imports']
+            is_alias_exist = any([a.get('qualifier') == completion['module_alias'] for a in file_imports])
+            if is_alias_exist:
+                return
+
         file_text = view.substr(sublime.Region(0, view.size()))
 
         # TODO, also import the types
