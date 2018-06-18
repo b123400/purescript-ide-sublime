@@ -64,15 +64,25 @@ def find_project_dir(view):
         return None
 
     folders = [x + os.sep for x in view.window().folders()]
-    folder = first_starts_with(folders, file_path)
-    if folder is None:
+    project_folder = first_starts_with(folders, file_path)
+    if project_folder is None:
         return None
+
+    target_folder = project_folder
+    current_paths = file_path.split(os.sep)[:-1]
+    while os.sep.join(current_paths).startswith(project_folder):
+        current_path = os.sep.join(current_paths)
+        files = os.listdir(current_path)
+        if ("psc-package.json" in files) or ("package.json" in files):
+            target_folder = current_path
+            break
+        current_paths = current_paths[:-1]
 
     if file_path in project_path_cache:
         return project_path_cache[file_path]
 
-    project_path_cache[file_path] = folder
-    return folder
+    project_path_cache[file_path] = target_folder
+    return target_folder
 
 
 def ignore_non_purescript(f):
