@@ -51,8 +51,9 @@ class StartServerEventListener(sublime_plugin.EventListener):
         this_project_path = find_project_dir(view)
 
         def perform():
-            all_views = [view for win in sublime.windows() for view in win.views()]
-            all_project_paths = [find_project_dir(v) for v in all_views]
+            all_views = [view for win in sublime.windows() for view in win.views() if view.file_name() is not None]
+            purs_views = [v for v in all_views if v.file_name().endswith(".purs")]
+            all_project_paths = [find_project_dir(v) for v in purs_views]
             all_project_paths = [p for p in all_project_paths if p is not None]
             all_project_paths = list(set(all_project_paths))
 
