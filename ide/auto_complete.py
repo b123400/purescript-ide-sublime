@@ -99,11 +99,6 @@ class CompletionEventListener(PurescriptViewEventListener):
                     self.last_completion_results[str_to_display] = r
                     self.last_completions.append([str_to_display, r['identifier']])
 
-                # Force query auto complete
-                if view.is_auto_complete_visible():
-                    view.window().run_command('hide_auto_complete')
-                view.window().run_command('auto_complete', {'disable_auto_insert': True})
-
             this_thread = CodeCompleteThread(project_path, prefix, callback)
             this_thread.start()
 
