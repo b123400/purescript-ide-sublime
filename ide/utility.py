@@ -73,7 +73,7 @@ def find_project_dir(view):
     while os.sep.join(current_paths).startswith(project_folder):
         current_path = os.sep.join(current_paths)
         files = os.listdir(current_path)
-        if ("psc-package.json" in files) or ("package.json" in files):
+        if ("psc-package.json" in files) or ("package.json" in files) or ("packages.dhall" in files) or ("spago.dhall" in files):
             target_folder = current_path
             break
         current_paths = current_paths[:-1]
