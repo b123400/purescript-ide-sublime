@@ -7,6 +7,8 @@
   // timeout in second, null means no timeout
   "auto_complete_timeout": null,
 
+  "enable_auto_complete": true,
+
   // Servers that are already running will not change port
   // when you modify this setting. Restart if you need.
   "port_starts_from": 4242

@@ -35,6 +35,8 @@ class CompletionEventListener(PurescriptViewEventListener):
         view = self.view
         if view.file_name() is None:
             return
+        if not get_settings('enable_auto_complete', True):
+            return
 
         line_str = view.substr(view.line(view.sel()[0]))
         if line_str.startswith('import '):
