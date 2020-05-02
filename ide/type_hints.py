@@ -110,16 +110,18 @@ class TypeHintEventListener(PurescriptViewEventListener):
         def on_navigate(string):
             view.window().open_file(string, sublime.ENCODED_POSITION)
 
-        #file_path:row:col
-        link_url = first_result['definedAt']['name'] + ':' + \
-            str(first_result['definedAt']['start'][0]) + ':' + \
-            str(first_result['definedAt']['start'][1])
+        exported_from = ",".join(first_result['exportedFrom'])
+        if first_result['definedAt']:
+            #file_path:row:col
+            link_url = first_result['definedAt']['name'] + ':' + \
+                str(first_result['definedAt']['start'][0]) + ':' + \
+                str(first_result['definedAt']['start'][1])
+            exported_from = '<a href="%s">%s</a>' % (link_url, exported_from)
 
         view.show_popup('''
-            <p>From: <a href="%s">%s</a> </p>
+            <p>From: %s </p>
             <p>Type: %s </p>
-        ''' % ( link_url,
-                ",".join(first_result['exportedFrom']),
+        ''' % ( exported_from,
                 first_result['type']),
         sublime.HIDE_ON_MOUSE_MOVE_AWAY,
         point,
